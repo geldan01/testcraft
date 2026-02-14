@@ -63,12 +63,13 @@ function formatTimestamp(timestamp: string): string {
   <UCard>
     <template #header>
       <div class="flex items-center justify-between">
-        <h3 class="text-base font-semibold">
+        <h3 data-testid="dashboard-recent-activity" class="text-base font-semibold">
           Recent Activity
         </h3>
         <UButton
+          data-testid="dashboard-view-all-activity"
           variant="link"
-          color="white"
+          color="neutral"
           size="xs"
           trailing-icon="i-lucide-arrow-right"
         >
@@ -91,6 +92,7 @@ function formatTimestamp(timestamp: string): string {
     <!-- Empty state -->
     <div
       v-else-if="activities.length === 0"
+      data-testid="dashboard-no-recent-activity"
       class="text-center py-8"
     >
       <UIcon name="i-lucide-activity" class="text-3xl text-gray-400 dark:text-gray-400 mb-2" />

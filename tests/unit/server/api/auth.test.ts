@@ -203,13 +203,13 @@ describe('Auth API - First User Admin Logic', () => {
   })
 
   it('subsequent users should not become admin', () => {
-    const userCount = 1
+    const userCount: number = 1
     const isAdmin = userCount === 0
     expect(isAdmin).toBe(false)
   })
 
   it('with many existing users, new user is not admin', () => {
-    const userCount = 42
+    const userCount: number = 42
     const isAdmin = userCount === 0
     expect(isAdmin).toBe(false)
   })

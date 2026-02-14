@@ -82,7 +82,8 @@ test.describe('Test Cases - List Page', () => {
     await testCasesPage.goto('project-1')
 
     await expect(testCasesPage.heading).toBeVisible()
-    await expect(testCasesPage.countText(3)).toBeVisible()
+    await expect(testCasesPage.countText).toBeVisible()
+    await expect(testCasesPage.countText).toContainText('3 test cases in this project')
   })
 
   test('renders the Create Test Case button', async ({ page }) => {
@@ -110,9 +111,9 @@ test.describe('Test Cases - List Page', () => {
     await expect(page.getByText('Status').first()).toBeVisible()
 
     // Test case names should be visible
-    await expect(testCasesPage.testCaseName('Login with valid credentials')).toBeVisible()
-    await expect(testCasesPage.testCaseName('Login with invalid password')).toBeVisible()
-    await expect(testCasesPage.testCaseName('Password reset flow')).toBeVisible()
+    await expect(testCasesPage.rowName('tc-1')).toHaveText('Login with valid credentials')
+    await expect(testCasesPage.rowName('tc-2')).toHaveText('Login with invalid password')
+    await expect(testCasesPage.rowName('tc-3')).toHaveText('Password reset flow')
   })
 
   test('shows test type badges correctly', async ({ page }) => {
@@ -131,9 +132,8 @@ test.describe('Test Cases - List Page', () => {
     const testCasesPage = new TestCasesPage(page)
     await testCasesPage.goto('project-1')
 
-    // The third test case has debugFlag: true
-    // Bug icon should be visible for flagged items (shown as red bug icon)
-    await expect(testCasesPage.debugFlagButtons).toHaveCount(1)
+    // The third test case has debugFlag: true — its debug toggle should be visible
+    await expect(testCasesPage.debugToggle('tc-3')).toBeVisible()
   })
 
   test('Create Test Case button navigates to new form', async ({ page }) => {
@@ -251,13 +251,15 @@ test.describe('Test Cases - Detail Page', () => {
     await expect(testCaseDetail.heading('Login with valid credentials')).toBeVisible()
 
     // Status badge
-    await expect(testCaseDetail.statusText('Not Run')).toBeVisible()
+    await expect(testCaseDetail.statusBadge).toBeVisible()
 
     // Type badge
-    await expect(testCaseDetail.typeBadge('Step-Based')).toBeVisible()
+    await expect(testCaseDetail.typeBadge).toBeVisible()
+    await expect(testCaseDetail.typeBadge).toContainText('Step-Based')
 
     // Debug flag toggle
-    await expect(testCaseDetail.flagForDebugText).toBeVisible()
+    await expect(testCaseDetail.debugToggle).toBeVisible()
+    await expect(testCaseDetail.debugToggle).toContainText('Flag for Debug')
 
     // Run Test button
     await expect(testCaseDetail.runTestButton).toBeVisible()
@@ -266,7 +268,7 @@ test.describe('Test Cases - Detail Page', () => {
     await expect(testCaseDetail.editButton).toBeVisible()
 
     // Test Steps section
-    await expect(testCaseDetail.testStepsHeading).toBeVisible()
+    await expect(testCaseDetail.stepsHeading).toBeVisible()
 
     // Run History section
     await expect(testCaseDetail.runHistoryHeading).toBeVisible()
@@ -287,8 +289,8 @@ test.describe('Test Cases - Detail Page', () => {
     await testCaseDetail.goto('project-1', 'tc-3')
 
     // Debug flag should show "Flagged" state
-    await expect(testCaseDetail.flaggedText).toBeVisible()
-    await expect(testCaseDetail.flaggedByText(MOCK_USER.name)).toBeVisible()
+    await expect(testCaseDetail.debugToggle).toContainText('Flagged')
+    await expect(testCaseDetail.debugInfo).toContainText(`by ${MOCK_USER.name}`)
   })
 
   test('shows not found state for invalid test case ID', async ({ page }) => {
@@ -442,7 +444,7 @@ test.describe('Test Cases - Detail Page (Run History)', () => {
     await testCaseDetail.goto('project-1', 'tc-1')
 
     // Run History heading with count
-    await expect(testCaseDetail.runHistoryCount(2)).toBeVisible()
+    await expect(testCaseDetail.runHistoryHeading).toContainText('Run History (2)')
   })
 
   test('run history shows status badges for each run', async ({ page }) => {
@@ -478,9 +480,9 @@ test.describe('Test Cases - Filtering', () => {
     await testCasesPage.goto('project-1')
 
     // All 3 test cases should be visible initially
-    await expect(testCasesPage.testCaseName('Login with valid credentials')).toBeVisible()
-    await expect(testCasesPage.testCaseName('Login with invalid password')).toBeVisible()
-    await expect(testCasesPage.testCaseName('Password reset flow')).toBeVisible()
+    await expect(testCasesPage.rowName('tc-1')).toHaveText('Login with valid credentials')
+    await expect(testCasesPage.rowName('tc-2')).toHaveText('Login with invalid password')
+    await expect(testCasesPage.rowName('tc-3')).toHaveText('Password reset flow')
 
     // Fill the search input
     await testCasesPage.searchInput.fill('Login')
@@ -494,11 +496,10 @@ test.describe('Test Cases - Filtering', () => {
     const testCasesPage = new TestCasesPage(page)
     await testCasesPage.goto('project-1')
 
-    // The "Password reset flow" test case has debugFlag: true, shown via a red bug icon
-    await expect(testCasesPage.debugFlagButtons).toHaveCount(1)
-
-    // Unflagged test cases show the bug-off icon
-    await expect(testCasesPage.unflaggedButtons).toHaveCount(2)
+    // Each test case row should have a debug toggle button
+    await expect(testCasesPage.debugToggle('tc-1')).toBeVisible()
+    await expect(testCasesPage.debugToggle('tc-2')).toBeVisible()
+    await expect(testCasesPage.debugToggle('tc-3')).toBeVisible()
   })
 })
 
@@ -561,7 +562,7 @@ test.describe('Test Cases - Detail Page (Linked Plans & Suites)', () => {
     const testCaseDetail = new TestCaseDetailPage(page)
     await testCaseDetail.goto('project-1', 'tc-1')
 
-    await expect(testCaseDetail.plansSectionCount(2)).toBeVisible()
+    await expect(testCaseDetail.plansHeading).toContainText('Test Plans (2)')
   })
 
   test('displays linked plan names', async ({ page }) => {
@@ -580,7 +581,7 @@ test.describe('Test Cases - Detail Page (Linked Plans & Suites)', () => {
     const testCaseDetail = new TestCaseDetailPage(page)
     await testCaseDetail.goto('project-1', 'tc-1')
 
-    await expect(testCaseDetail.suitesSectionCount(1)).toBeVisible()
+    await expect(testCaseDetail.suitesHeading).toContainText('Test Suites (1)')
   })
 
   test('displays linked suite names with type badge', async ({ page }) => {
@@ -602,7 +603,7 @@ test.describe('Test Cases - Detail Page (Linked Plans & Suites)', () => {
     const testCaseDetail = new TestCaseDetailPage(page)
     await testCaseDetail.goto('project-1', 'tc-1')
 
-    await expect(testCaseDetail.plansSectionCount(0)).toBeVisible()
+    await expect(testCaseDetail.plansHeading).toContainText('Test Plans (0)')
     await expect(testCaseDetail.noPlanMessage).toBeVisible()
   })
 
@@ -615,7 +616,7 @@ test.describe('Test Cases - Detail Page (Linked Plans & Suites)', () => {
     const testCaseDetail = new TestCaseDetailPage(page)
     await testCaseDetail.goto('project-1', 'tc-1')
 
-    await expect(testCaseDetail.suitesSectionCount(0)).toBeVisible()
+    await expect(testCaseDetail.suitesHeading).toContainText('Test Suites (0)')
     await expect(testCaseDetail.noSuiteMessage).toBeVisible()
   })
 
@@ -716,7 +717,7 @@ test.describe('Test Cases - Detail Page (Linked Plans & Suites)', () => {
 
     // Click the "Add" link button in the Test Plans card header
     // There are two "Add" buttons (one for plans, one for suites)
-    await testCaseDetail.addButtons.first().click()
+    await testCaseDetail.addPlanButton.click()
 
     // Modal should open
     await expect(page.getByText('Select test plans to link this test case to.')).toBeVisible()
@@ -752,7 +753,7 @@ test.describe('Test Cases - Detail Page (Linked Plans & Suites)', () => {
     await testCaseDetail.goto('project-1', 'tc-1')
 
     // Click the "Add" link button in the Test Suites card header (second one)
-    await testCaseDetail.addButtons.nth(1).click()
+    await testCaseDetail.addSuiteButton.click()
 
     // Modal should open
     await expect(page.getByText('Select test suites to link this test case to.')).toBeVisible()
@@ -801,7 +802,7 @@ test.describe('Test Cases - Detail Page (Linked Plans & Suites)', () => {
     await testCaseDetail.goto('project-1', 'tc-1')
 
     // Open add plans modal
-    await testCaseDetail.addButtons.first().click()
+    await testCaseDetail.addPlanButton.click()
 
     // Select the plan
     await page.locator('[role="dialog"]').getByText('E2E Coverage').click()
@@ -850,7 +851,7 @@ test.describe('Test Cases - Detail Page (Linked Plans & Suites)', () => {
     await testCaseDetail.goto('project-1', 'tc-1')
 
     // Open add suites modal
-    await testCaseDetail.addButtons.nth(1).click()
+    await testCaseDetail.addSuiteButton.click()
 
     // Select the suite
     await page.locator('[role="dialog"]').getByText('API Integration').click()

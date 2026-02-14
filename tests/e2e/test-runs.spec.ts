@@ -80,7 +80,8 @@ test.describe('Test Runs - History Page', () => {
     // The status filter has "All Statuses" as default
     // The environment filter has "All Environments" as default
     // Date inputs for from and to
-    await expect(runsPage.dateInputs).toHaveCount(2)
+    await expect(runsPage.dateFromFilter).toBeVisible()
+    await expect(runsPage.dateToFilter).toBeVisible()
   })
 
   test('displays runs in a table', async ({ page }) => {
@@ -113,12 +114,12 @@ test.describe('Test Runs - History Page', () => {
     await expect(page.getByText('--').first()).toBeVisible()
   })
 
-  test('test case names in runs are clickable links', async () => {
+  test('test case names are displayed in the runs table', async () => {
     await runsPage.goto('project-1')
 
-    const testCaseLink = runsPage.testCaseLink('Login with valid credentials')
-    await expect(testCaseLink).toBeVisible()
-    await expect(testCaseLink).toHaveAttribute('href', /\/projects\/project-1\/test-cases\/tc-1/)
+    const firstTestCaseName = runsPage.testCaseNames.first()
+    await expect(firstTestCaseName).toBeVisible()
+    await expect(firstTestCaseName).toHaveText('Login with valid credentials')
   })
 })
 

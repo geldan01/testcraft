@@ -50,6 +50,7 @@ await fetchOrganizations()
       </div>
       <UButton
         icon="i-lucide-plus"
+        data-testid="organizations-create-button"
         @click="showCreateModal = true"
       >
         Create Organization
@@ -73,6 +74,7 @@ await fetchOrganizations()
     <!-- Empty state -->
     <div
       v-else-if="organizations.length === 0"
+      data-testid="organizations-empty-state"
       class="text-center py-16"
     >
       <div class="w-16 h-16 mx-auto rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
@@ -98,6 +100,7 @@ await fetchOrganizations()
         v-for="org in organizations"
         :key="org.id"
         :to="`/organizations/${org.id}`"
+        :data-testid="`organizations-org-card-${org.id}`"
         class="group"
       >
         <UCard class="h-full hover:shadow-md transition-shadow cursor-pointer">
@@ -137,6 +140,7 @@ await fetchOrganizations()
       v-model:open="showCreateModal"
       title="Create Organization"
       description="Organizations help you group projects and team members."
+      data-testid="organizations-create-modal"
     >
       <template #body>
         <form @submit.prevent="handleCreate">
@@ -146,6 +150,7 @@ await fetchOrganizations()
               placeholder="e.g., Acme Corp"
               autofocus
               class="w-full"
+              data-testid="organizations-create-modal-name-input"
             />
           </UFormField>
         </form>
@@ -156,6 +161,7 @@ await fetchOrganizations()
           <UButton
             variant="ghost"
             color="neutral"
+            data-testid="organizations-create-modal-cancel-button"
             @click="showCreateModal = false"
           >
             Cancel
@@ -163,6 +169,7 @@ await fetchOrganizations()
           <UButton
             :loading="creating"
             :disabled="!newOrgName.trim()"
+            data-testid="organizations-create-modal-submit-button"
             @click="handleCreate"
           >
             Create

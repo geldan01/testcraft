@@ -21,24 +21,24 @@ test.describe('Project Detail - Overview Page', () => {
     await project.goto('project-1')
 
     await expect(project.heading('Web App')).toBeVisible()
-    await expect(project.description('Main web application')).toBeVisible()
+    await expect(project.description).toBeVisible()
+    await expect(project.description).toHaveText('Main web application')
   })
 
   test('stats cards render with correct counts', async () => {
     await project.goto('project-1')
 
-    // Stat card labels (use <p> selector to avoid matching sidebar links or tabs)
-    await expect(project.statLabel('Test Cases')).toBeVisible()
-    await expect(project.statValue('15')).toBeVisible()
+    await expect(project.stat('test-cases')).toBeVisible()
+    await expect(project.stat('test-cases')).toContainText('15')
 
-    await expect(project.statLabel('Test Plans')).toBeVisible()
-    await expect(project.statValue('3').first()).toBeVisible()
+    await expect(project.stat('test-plans')).toBeVisible()
+    await expect(project.stat('test-plans')).toContainText('3')
 
-    await expect(project.statLabel('Test Suites')).toBeVisible()
-    await expect(project.statValue('4', true)).toBeVisible()
+    await expect(project.stat('test-suites')).toBeVisible()
+    await expect(project.stat('test-suites')).toContainText('4')
 
-    await expect(project.statLabel('Members')).toBeVisible()
-    await expect(project.statValue('5', true)).toBeVisible()
+    await expect(project.stat('members')).toBeVisible()
+    await expect(project.stat('members')).toContainText('5')
   })
 
   test('tabs display correctly', async () => {

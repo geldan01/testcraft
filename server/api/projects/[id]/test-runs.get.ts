@@ -52,6 +52,14 @@ export default defineEventHandler(async (event) => {
     where.environment = { contains: query.environment, mode: 'insensitive' }
   }
 
+  if (query.executedById && typeof query.executedById === 'string') {
+    where.executedById = query.executedById
+  }
+
+  if (query.testCaseId && typeof query.testCaseId === 'string') {
+    where.testCaseId = query.testCaseId
+  }
+
   if (query.dateFrom && typeof query.dateFrom === 'string') {
     where.executedAt = {
       ...(where.executedAt as Prisma.DateTimeFilter || {}),

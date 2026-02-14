@@ -28,3 +28,21 @@ const localStorageMock = (() => {
 })()
 
 Object.defineProperty(globalThis, 'localStorage', { value: localStorageMock })
+
+// Provide H3/Nitro server auto-imports as globals for server API handler tests.
+// The Nuxt test environment handles Vue auto-imports but not server-side H3 utilities.
+// defineEventHandler is an identity function (returns the handler itself).
+// Other H3 functions are defined as no-ops here but overridden per-test via vi.stubGlobal.
+import { vi } from 'vitest'
+
+;(globalThis as Record<string, unknown>).defineEventHandler = (handler: Function) => handler
+;(globalThis as Record<string, unknown>).getRouterParam = vi.fn()
+;(globalThis as Record<string, unknown>).readBody = vi.fn()
+;(globalThis as Record<string, unknown>).readMultipartFormData = vi.fn()
+;(globalThis as Record<string, unknown>).getQuery = vi.fn()
+;(globalThis as Record<string, unknown>).setResponseStatus = vi.fn()
+;(globalThis as Record<string, unknown>).createError = (opts: { statusCode: number; statusMessage: string }) => {
+  const err = new Error(opts.statusMessage) as Error & { statusCode: number }
+  err.statusCode = opts.statusCode
+  return err
+}

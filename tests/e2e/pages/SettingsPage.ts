@@ -6,22 +6,28 @@ export class SettingsPage {
 
   async goto() { await this.page.goto(this.path) }
 
+  // Headings - keep getByRole for accessibility validation
   get heading(): Locator { return this.page.getByRole('heading', { name: 'Settings' }) }
+  get orgDetailsHeading(): Locator { return this.page.getByRole('heading', { name: 'Organization Details' }) }
+  get dangerZone(): Locator { return this.page.getByRole('heading', { name: 'Danger Zone' }) }
+  get rbacHeading(): Locator { return this.page.getByRole('heading', { name: 'Role-Based Access Control' }) }
 
+  // Tabs - keep getByRole('tab') because UTabs renders triggers internally
+  // and does not support passing data-testid through the items array
   get organizationTab(): Locator { return this.page.getByRole('tab', { name: 'Organization' }) }
   get membersTab(): Locator { return this.page.getByRole('tab', { name: 'Members' }) }
   get rbacTab(): Locator { return this.page.getByRole('tab', { name: 'RBAC' }) }
 
-  get orgDetailsHeading(): Locator { return this.page.getByText('Organization Details') }
-  get saveChangesButton(): Locator { return this.page.getByRole('button', { name: 'Save Changes' }) }
-  get dangerZone(): Locator { return this.page.getByText('Danger Zone') }
-  get deleteOrgButton(): Locator { return this.page.getByRole('button', { name: 'Delete' }) }
+  // Organization tab
+  get saveChangesButton(): Locator { return this.page.getByTestId('settings-save-button') }
+  get deleteOrgButton(): Locator { return this.page.getByTestId('settings-delete-org-button') }
 
-  memberName(name: string): Locator { return this.page.getByText(name) }
-  get inviteMemberButton(): Locator { return this.page.getByRole('button', { name: 'Invite Member' }) }
-  get removeMemberButtons(): Locator { return this.page.getByLabel('Remove member') }
-  get inviteEmailInput(): Locator { return this.page.getByPlaceholder('colleague@example.com') }
+  // Members tab
+  memberName(name: string): Locator { return this.page.getByTestId('settings-member-name').filter({ hasText: name }) }
+  get inviteMemberButton(): Locator { return this.page.getByTestId('settings-invite-member-button') }
+  get removeMemberButtons(): Locator { return this.page.getByTestId('settings-remove-member-button') }
+  get inviteEmailInput(): Locator { return this.page.getByTestId('settings-invite-email-input') }
 
-  get rbacHeading(): Locator { return this.page.getByText('Role-Based Access Control') }
-  get noRbacMessage(): Locator { return this.page.getByText('No custom RBAC permissions configured.') }
+  // RBAC tab
+  get noRbacMessage(): Locator { return this.page.getByTestId('settings-no-rbac-message') }
 }

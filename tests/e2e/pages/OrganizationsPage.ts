@@ -12,13 +12,13 @@ export class OrganizationsPage {
   get topBar(): TopBar { return new TopBar(this.page) }
 
   get heading(): Locator { return this.page.getByRole('heading', { name: 'Organizations' }) }
-  get createOrgButton(): Locator { return this.page.getByRole('button', { name: 'Create Organization' }) }
-  get emptyState(): Locator { return this.page.getByText('No organizations yet') }
+  get createOrgButton(): Locator { return this.page.getByTestId('organizations-create-button') }
+  get emptyState(): Locator { return this.page.getByTestId('organizations-empty-state') }
 
-  orgCard(name: string): Locator { return this.page.getByRole('link', { name: new RegExp(name) }).first() }
+  orgCard(orgId: string): Locator { return this.page.getByTestId(`organizations-org-card-${orgId}`) }
 
-  get createModal(): Locator { return this.page.locator('[role="dialog"]') }
-  get modalNameInput(): Locator { return this.page.getByPlaceholder('e.g., Acme Corp') }
-  get modalCreateButton(): Locator { return this.createModal.getByRole('button', { name: 'Create' }) }
-  get modalCancelButton(): Locator { return this.createModal.getByRole('button', { name: 'Cancel' }) }
+  get createModal(): Locator { return this.page.getByTestId('organizations-create-modal') }
+  get modalNameInput(): Locator { return this.page.getByTestId('organizations-create-modal-name-input') }
+  get modalCreateButton(): Locator { return this.page.getByTestId('organizations-create-modal-submit-button') }
+  get modalCancelButton(): Locator { return this.page.getByTestId('organizations-create-modal-cancel-button') }
 }

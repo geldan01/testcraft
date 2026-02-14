@@ -9,16 +9,16 @@ export class TestSuiteDetailPage {
   }
 
   heading(name: string): Locator { return this.page.getByRole('heading', { name }) }
-  typeBadge(type: string): Locator { return this.page.getByText(type, { exact: true }) }
-  get editButton(): Locator { return this.page.getByRole('button', { name: 'Edit', exact: true }) }
-  get addTestCasesButton(): Locator { return this.page.getByRole('button', { name: 'Add Test Cases' }) }
+  typeBadge(type: string): Locator { return this.page.getByTestId('test-suite-detail-type-badge').filter({ hasText: type }) }
+  get editButton(): Locator { return this.page.getByTestId('test-suite-detail-edit-button') }
+  get addTestCasesButton(): Locator { return this.page.getByTestId('test-suite-detail-add-cases-button') }
 
-  linkedCaseName(name: string): Locator { return this.page.getByText(name) }
-  get unlinkButtons(): Locator { return this.page.getByLabel('Unlink test case') }
-  get emptyCasesMsg(): Locator { return this.page.getByText('No test cases in this suite yet.') }
+  linkedCaseName(name: string): Locator { return this.page.getByTestId('test-suite-detail-linked-case-name').filter({ hasText: name }) }
+  get unlinkButtons(): Locator { return this.page.getByTestId('test-suite-detail-unlink-button') }
+  get emptyCasesMsg(): Locator { return this.page.getByTestId('test-suite-detail-empty-cases-message') }
 
   get addTestCasesModal(): AddTestCasesModal { return new AddTestCasesModal(this.page) }
 
-  get notFoundMessage(): Locator { return this.page.getByText('Test Suite not found') }
-  get backButton(): Locator { return this.page.getByRole('button', { name: 'Back to Test Suites' }) }
+  get notFoundMessage(): Locator { return this.page.getByTestId('test-suite-detail-not-found') }
+  get backButton(): Locator { return this.page.getByTestId('test-suite-detail-back-button') }
 }

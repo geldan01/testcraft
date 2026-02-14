@@ -82,7 +82,7 @@ async function handleSubmit() {
     <div class="flex items-center justify-between">
       <div>
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Create Test Case</h1>
-        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400" data-testid="test-case-create-subtitle">
           Define a new test case with steps or Gherkin syntax.
         </p>
       </div>
@@ -90,6 +90,7 @@ async function handleSubmit() {
         variant="ghost"
         color="neutral"
         icon="i-lucide-x"
+        data-testid="test-case-create-cancel-button"
         @click="navigateTo(`/projects/${projectId}/test-cases`)"
       >
         Cancel
@@ -118,6 +119,7 @@ async function handleSubmit() {
               v-model="name"
               placeholder="e.g., Verify user login with valid credentials"
               class="w-full"
+              data-testid="test-case-create-name-input"
             />
           </UFormField>
 
@@ -127,6 +129,7 @@ async function handleSubmit() {
               placeholder="Describe what this test case validates..."
               :rows="3"
               class="w-full"
+              data-testid="test-case-create-description-input"
             />
           </UFormField>
 
@@ -139,6 +142,7 @@ async function handleSubmit() {
                 :class="testType === 'STEP_BASED'
                   ? 'bg-indigo-600 text-white'
                   : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'"
+                data-testid="test-case-create-step-based-button"
                 @click="testType = 'STEP_BASED'"
               >
                 Step-Based
@@ -149,6 +153,7 @@ async function handleSubmit() {
                 :class="testType === 'GHERKIN'
                   ? 'bg-indigo-600 text-white'
                   : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'"
+                data-testid="test-case-create-gherkin-button"
                 @click="testType = 'GHERKIN'"
               >
                 Gherkin (BDD)
@@ -169,11 +174,13 @@ async function handleSubmit() {
               v-model="newPrecondition"
               placeholder="Add a precondition..."
               class="flex-1"
+              data-testid="test-case-create-precondition-input"
               @keydown.enter.prevent="addPrecondition"
             />
             <UButton
               icon="i-lucide-plus"
               variant="soft"
+              data-testid="test-case-create-add-precondition-button"
               @click="addPrecondition"
             >
               Add
@@ -219,6 +226,7 @@ async function handleSubmit() {
         <UButton
           variant="ghost"
           color="neutral"
+          data-testid="test-case-create-cancel-button"
           @click="navigateTo(`/projects/${projectId}/test-cases`)"
         >
           Cancel
@@ -228,6 +236,7 @@ async function handleSubmit() {
           :loading="submitting"
           :disabled="!isValid"
           icon="i-lucide-check"
+          data-testid="test-case-create-submit-button"
         >
           Create Test Case
         </UButton>

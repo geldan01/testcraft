@@ -7,14 +7,14 @@ export class LoginPage {
   async goto() { await this.page.goto(this.path) }
 
   get heading(): Locator { return this.page.getByRole('heading', { name: 'Sign in to your account' }) }
-  get subtitle(): Locator { return this.page.getByText('Welcome back! Enter your credentials to continue.') }
-  get emailInput(): Locator { return this.page.getByPlaceholder('you@example.com') }
-  get passwordInput(): Locator { return this.page.getByPlaceholder('Enter your password') }
-  get signInButton(): Locator { return this.page.getByRole('button', { name: 'Sign in' }) }
-  get rememberMeCheckbox(): Locator { return this.page.getByText('Remember me') }
-  get forgotPasswordLink(): Locator { return this.page.getByRole('link', { name: 'Forgot password?' }) }
-  get googleOAuthButton(): Locator { return this.page.getByRole('button', { name: 'Google' }) }
-  get facebookOAuthButton(): Locator { return this.page.getByRole('button', { name: 'Facebook' }) }
-  get signUpLink(): Locator { return this.page.getByRole('link', { name: 'Sign up' }) }
+  get subtitle(): Locator { return this.page.getByTestId('login-subtitle') }
+  get emailInput(): Locator { return this.page.getByTestId('login-email-input') }
+  get passwordInput(): Locator { return this.page.getByTestId('login-password-input') }
+  get signInButton(): Locator { return this.page.getByTestId('login-submit-button') }
+  get rememberMeCheckbox(): Locator { return this.page.getByTestId('login-remember-checkbox') }
+  get forgotPasswordLink(): Locator { return this.page.getByTestId('login-forgot-password-link') }
+  get googleOAuthButton(): Locator { return this.page.getByTestId('login-oauth-google') }
+  get facebookOAuthButton(): Locator { return this.page.getByTestId('login-oauth-facebook') }
+  get signUpLink(): Locator { return this.page.getByTestId('login-signup-link') }
   get alertMessage(): Locator { return this.page.getByRole('alert') }
 }

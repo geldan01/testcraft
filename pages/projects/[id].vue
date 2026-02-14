@@ -41,7 +41,7 @@ const activeTab = computed(() => {
   if (path.includes('/test-cases')) return 'test-cases'
   if (path.includes('/test-plans')) return 'test-plans'
   if (path.includes('/test-suites')) return 'test-suites'
-  if (path.includes('/runs')) return 'runs'
+  if (path.includes('/test-runs') || path.includes('/runs')) return 'runs'
   return 'overview'
 })
 
@@ -73,12 +73,14 @@ function navigateToSection(section: string) {
           </h1>
           <p
             v-if="project.description"
+            data-testid="project-detail-description"
             class="mt-1 text-sm text-gray-500 dark:text-gray-400"
           >
             {{ project.description }}
           </p>
         </div>
         <UButton
+          data-testid="project-detail-settings-button"
           icon="i-lucide-settings"
           variant="outline"
           color="neutral"
@@ -89,26 +91,30 @@ function navigateToSection(section: string) {
       </div>
 
       <!-- Stats -->
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div data-testid="project-detail-stats" class="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <DashboardStatsCard
+          data-testid="project-detail-stat-test-cases"
           label="Test Cases"
           :value="project._count?.testCases ?? 0"
           icon="i-lucide-test-tubes"
           color="indigo"
         />
         <DashboardStatsCard
+          data-testid="project-detail-stat-test-plans"
           label="Test Plans"
           :value="project._count?.testPlans ?? 0"
           icon="i-lucide-clipboard-list"
           color="blue"
         />
         <DashboardStatsCard
+          data-testid="project-detail-stat-test-suites"
           label="Test Suites"
           :value="project._count?.testSuites ?? 0"
           icon="i-lucide-folder-tree"
           color="green"
         />
         <DashboardStatsCard
+          data-testid="project-detail-stat-members"
           label="Members"
           :value="project._count?.members ?? 0"
           icon="i-lucide-users"
@@ -135,6 +141,7 @@ function navigateToSection(section: string) {
           </template>
           <div class="space-y-2">
             <UButton
+              data-testid="project-detail-create-test-case"
               block
               variant="soft"
               icon="i-lucide-plus"
@@ -143,6 +150,7 @@ function navigateToSection(section: string) {
               Create Test Case
             </UButton>
             <UButton
+              data-testid="project-detail-view-test-plans"
               block
               variant="soft"
               color="neutral"
@@ -152,6 +160,7 @@ function navigateToSection(section: string) {
               View Test Plans
             </UButton>
             <UButton
+              data-testid="project-detail-view-run-history"
               block
               variant="soft"
               color="neutral"
@@ -164,24 +173,24 @@ function navigateToSection(section: string) {
         </UCard>
 
         <!-- Project info -->
-        <UCard>
+        <UCard data-testid="project-detail-info-card">
           <template #header>
             <h3 class="text-base font-semibold">Project Details</h3>
           </template>
           <dl class="space-y-3 text-sm">
-            <div class="flex justify-between">
+            <div data-testid="project-detail-created" class="flex justify-between">
               <dt class="text-gray-500 dark:text-gray-400">Created</dt>
               <dd class="text-gray-900 dark:text-white font-medium">
                 {{ new Date(project.createdAt).toLocaleDateString() }}
               </dd>
             </div>
-            <div class="flex justify-between">
+            <div data-testid="project-detail-last-updated" class="flex justify-between">
               <dt class="text-gray-500 dark:text-gray-400">Last Updated</dt>
               <dd class="text-gray-900 dark:text-white font-medium">
                 {{ new Date(project.updatedAt).toLocaleDateString() }}
               </dd>
             </div>
-            <div class="flex justify-between">
+            <div data-testid="project-detail-organization" class="flex justify-between">
               <dt class="text-gray-500 dark:text-gray-400">Organization</dt>
               <dd class="text-gray-900 dark:text-white font-medium">
                 {{ project.organization?.name ?? 'N/A' }}
@@ -193,10 +202,10 @@ function navigateToSection(section: string) {
     </template>
 
     <!-- Not found -->
-    <div v-else class="text-center py-16">
+    <div v-else data-testid="project-detail-not-found" class="text-center py-16">
       <UIcon name="i-lucide-search-x" class="text-4xl text-gray-400 dark:text-gray-400 mb-3" />
       <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Project not found</h2>
-      <UButton class="mt-4" variant="outline" @click="navigateTo('/organizations')">
+      <UButton data-testid="project-detail-back-button" class="mt-4" variant="outline" @click="navigateTo('/organizations')">
         Back to Organizations
       </UButton>
     </div>

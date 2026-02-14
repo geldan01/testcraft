@@ -124,7 +124,7 @@ function getSuiteTypeColor(type: string): string {
           size="sm"
         />
 
-        <UButton icon="i-lucide-plus" @click="showCreateModal = true">
+        <UButton data-testid="test-suites-create-button" icon="i-lucide-plus" @click="showCreateModal = true">
           Create Test Suite
         </UButton>
       </div>
@@ -138,6 +138,7 @@ function getSuiteTypeColor(type: string): string {
     <!-- Empty state -->
     <div
       v-else-if="filteredSuites.length === 0"
+      data-testid="test-suites-empty-state"
       class="text-center py-16 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg"
     >
       <UIcon name="i-lucide-folder-tree" class="text-4xl text-gray-400 dark:text-gray-400 mb-3" />
@@ -166,7 +167,7 @@ function getSuiteTypeColor(type: string): string {
               <h3 class="text-base font-semibold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
                 {{ suite.name }}
               </h3>
-              <UBadge :color="getSuiteTypeColor(suite.suiteType) as any" variant="subtle" size="xs">
+              <UBadge data-testid="test-suites-type-badge" :color="getSuiteTypeColor(suite.suiteType) as any" variant="subtle" size="xs">
                 {{ suite.suiteType }}
               </UBadge>
             </div>
@@ -204,7 +205,7 @@ function getSuiteTypeColor(type: string): string {
             </div>
           </div>
           <div class="flex items-center gap-3">
-            <UBadge :color="getSuiteTypeColor(suite.suiteType) as any" variant="subtle" size="xs">
+            <UBadge data-testid="test-suites-type-badge" :color="getSuiteTypeColor(suite.suiteType) as any" variant="subtle" size="xs">
               {{ suite.suiteType }}
             </UBadge>
             <UIcon name="i-lucide-chevron-right" class="text-gray-400 dark:text-gray-500" />
@@ -218,15 +219,17 @@ function getSuiteTypeColor(type: string): string {
       v-model:open="showCreateModal"
       title="Create Test Suite"
       description="Group related test cases into a suite."
+      data-testid="test-suites-create-modal"
     >
       <template #body>
         <form class="space-y-4" @submit.prevent="handleCreate">
           <UFormField label="Suite name" required>
-            <UInput v-model="newSuite.name" placeholder="e.g., Login Regression" autofocus class="w-full" />
+            <UInput v-model="newSuite.name" data-testid="test-suites-create-modal-name-input" placeholder="e.g., Login Regression" autofocus class="w-full" />
           </UFormField>
           <UFormField label="Suite type" required>
             <USelect
               v-model="newSuite.suiteType"
+              data-testid="test-suites-create-modal-type-select"
               :items="suiteTypes"
               placeholder="Select type..."
               value-key="value"
@@ -234,14 +237,14 @@ function getSuiteTypeColor(type: string): string {
             />
           </UFormField>
           <UFormField label="Description">
-            <UTextarea v-model="newSuite.description" placeholder="Describe this test suite..." :rows="3" class="w-full" />
+            <UTextarea v-model="newSuite.description" data-testid="test-suites-create-modal-description-input" placeholder="Describe this test suite..." :rows="3" class="w-full" />
           </UFormField>
         </form>
       </template>
       <template #footer>
         <div class="flex justify-end gap-3">
-          <UButton variant="ghost" color="neutral" @click="showCreateModal = false">Cancel</UButton>
-          <UButton :disabled="!newSuite.name.trim() || !newSuite.suiteType" @click="handleCreate">Create</UButton>
+          <UButton data-testid="test-suites-create-modal-cancel-button" variant="ghost" color="neutral" @click="showCreateModal = false">Cancel</UButton>
+          <UButton data-testid="test-suites-create-modal-submit-button" :disabled="!newSuite.name.trim() || !newSuite.suiteType" @click="handleCreate">Create</UButton>
         </div>
       </template>
     </UModal>

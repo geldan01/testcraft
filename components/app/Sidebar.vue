@@ -52,6 +52,11 @@ const projectNavItems = computed<NavigationItem[]>(() => {
       icon: 'i-lucide-history',
       to: `/projects/${projectId}/runs`,
     },
+    {
+      label: 'Debug Queue',
+      icon: 'i-lucide-bug',
+      to: `/projects/${projectId}/debug-queue`,
+    },
   ]
 })
 
@@ -72,6 +77,7 @@ function isActive(path: string): boolean {
   <aside
     class="fixed top-0 left-0 h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 z-40 flex flex-col transition-all duration-200"
     :class="collapsed ? 'w-16' : 'w-64'"
+    data-testid="sidebar"
     role="navigation"
     aria-label="Main navigation"
   >
@@ -88,6 +94,7 @@ function isActive(path: string): boolean {
       </div>
       <span
         v-if="!collapsed"
+        data-testid="sidebar-brand"
         class="text-lg font-bold text-gray-900 dark:text-white truncate"
       >
         {{ appName }}
@@ -108,6 +115,7 @@ function isActive(path: string): boolean {
           <li v-for="item in mainNavItems" :key="item.to">
             <NuxtLink
               :to="item.to"
+              :data-testid="`sidebar-nav-${item.label.toLowerCase().replace(/ /g, '-')}`"
               class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
               :class="[
                 isActive(item.to)
@@ -137,6 +145,7 @@ function isActive(path: string): boolean {
           <li v-for="item in projectNavItems" :key="item.to">
             <NuxtLink
               :to="item.to"
+              :data-testid="`sidebar-nav-${item.label.toLowerCase().replace(/ /g, '-')}`"
               class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
               :class="[
                 isActive(item.to)
@@ -160,6 +169,7 @@ function isActive(path: string): boolean {
         v-for="item in bottomNavItems"
         :key="item.to"
         :to="item.to"
+        :data-testid="`sidebar-nav-${item.label.toLowerCase()}`"
         class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
         :class="[
           isActive(item.to)
@@ -175,6 +185,7 @@ function isActive(path: string): boolean {
 
       <!-- Collapse toggle -->
       <button
+        data-testid="sidebar-collapse-toggle"
         class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors w-full"
         :class="collapsed ? 'justify-center' : ''"
         :title="collapsed ? 'Expand sidebar' : 'Collapse sidebar'"

@@ -2,6 +2,8 @@ import type {
   TestRun,
   CreateTestRunInput,
   UpdateTestRunInput,
+  StartTestRunInput,
+  CompleteTestRunInput,
   TestRunFilters,
   PaginatedResponse,
 } from '~/types'
@@ -79,6 +81,39 @@ export const useTestRun = () => {
     }
   }
 
+  async function startTestRun(input: StartTestRunInput): Promise<TestRun | null> {
+    try {
+      return await $fetch<TestRun>('/api/test-runs/start', {
+        method: 'POST',
+        body: input,
+      })
+    } catch {
+      return null
+    }
+  }
+
+  async function completeTestRun(
+    runId: string,
+    input: CompleteTestRunInput,
+  ): Promise<TestRun | null> {
+    try {
+      return await $fetch<TestRun>(`/api/test-runs/${runId}/complete`, {
+        method: 'PUT',
+        body: input,
+      })
+    } catch {
+      return null
+    }
+  }
+
+  async function getEnvironments(projectId: string): Promise<string[]> {
+    try {
+      return await $fetch<string[]>(`/api/projects/${projectId}/environments`)
+    } catch {
+      return []
+    }
+  }
+
   return {
     getRuns,
     getRunsForTestCase,
@@ -86,5 +121,8 @@ export const useTestRun = () => {
     startRun,
     completeRun,
     deleteRun,
+    startTestRun,
+    completeTestRun,
+    getEnvironments,
   }
 }

@@ -77,6 +77,7 @@ const statCards = computed(() => [
     value: stats.value.totalTestCases,
     icon: 'i-lucide-test-tubes',
     color: 'indigo',
+    testId: 'dashboard-stat-total-test-cases',
     trend: { value: 12, direction: 'up' as const },
   },
   {
@@ -84,6 +85,7 @@ const statCards = computed(() => [
     value: `${stats.value.passRate}%`,
     icon: 'i-lucide-check-circle',
     color: 'green',
+    testId: 'dashboard-stat-pass-rate',
     trend: { value: 3, direction: 'up' as const },
   },
   {
@@ -91,6 +93,7 @@ const statCards = computed(() => [
     value: stats.value.recentRuns,
     icon: 'i-lucide-play-circle',
     color: 'blue',
+    testId: 'dashboard-stat-recent-runs',
     trend: { value: 0, direction: 'neutral' as const },
   },
   {
@@ -98,6 +101,7 @@ const statCards = computed(() => [
     value: stats.value.debugFlagged,
     icon: 'i-lucide-bug',
     color: 'red',
+    testId: 'dashboard-stat-debug-flagged',
     trend: stats.value.debugFlagged > 0
       ? { value: stats.value.debugFlagged, direction: 'up' as const }
       : undefined,
@@ -115,13 +119,14 @@ const statCards = computed(() => [
         </h1>
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
           Here's what's happening in
-          <span class="font-medium">{{ currentOrg?.name ?? 'your organization' }}</span>
+          <span data-testid="dashboard-org-name" class="font-medium">{{ currentOrg?.name ?? 'your organization' }}</span>
         </p>
       </div>
 
       <!-- Quick actions -->
       <div class="flex items-center gap-2">
         <UButton
+          data-testid="dashboard-new-test-case-btn"
           icon="i-lucide-plus"
           size="sm"
           :disabled="!firstProjectId"
@@ -130,6 +135,7 @@ const statCards = computed(() => [
           New Test Case
         </UButton>
         <UButton
+          data-testid="dashboard-new-test-plan-btn"
           icon="i-lucide-clipboard-list"
           variant="outline"
           color="neutral"
@@ -140,6 +146,7 @@ const statCards = computed(() => [
           New Test Plan
         </UButton>
         <UButton
+          data-testid="dashboard-view-reports-btn"
           icon="i-lucide-bar-chart-3"
           variant="outline"
           color="neutral"
@@ -155,6 +162,7 @@ const statCards = computed(() => [
       <DashboardStatsCard
         v-for="stat in statCards"
         :key="stat.label"
+        :data-testid="stat.testId"
         :label="stat.label"
         :value="stat.value"
         :icon="stat.icon"
@@ -177,13 +185,14 @@ const statCards = computed(() => [
       <div>
         <UCard>
           <template #header>
-            <h3 class="text-base font-semibold">
+            <h3 data-testid="dashboard-quick-links" class="text-base font-semibold">
               Quick Links
             </h3>
           </template>
 
           <div class="space-y-2">
             <NuxtLink
+              data-testid="dashboard-manage-orgs-link"
               to="/organizations"
               class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group"
             >
@@ -202,6 +211,7 @@ const statCards = computed(() => [
             </NuxtLink>
 
             <NuxtLink
+              data-testid="dashboard-rbac-settings-link"
               to="/settings"
               class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group"
             >

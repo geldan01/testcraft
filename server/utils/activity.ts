@@ -1,4 +1,4 @@
-import type { ActivityActionType } from '@prisma/client'
+import type { ActivityActionType, Prisma } from '@prisma/client'
 import { prisma } from './db'
 
 export async function logActivity(
@@ -15,7 +15,7 @@ export async function logActivity(
         actionType,
         objectType,
         objectId,
-        changes: changes ?? null,
+        changes: changes as Prisma.InputJsonValue | undefined,
       },
     })
   } catch (error) {

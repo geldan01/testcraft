@@ -17,13 +17,30 @@ const runs = ref<TestRun[]>([])
 const total = ref(0)
 const loading = ref(true)
 
-// Filters
+// Filters - support testCaseId query param for pre-filtering
+const testCaseIdFilter = ref((route.query.testCaseId as string) ?? '')
 const statusFilter = ref<TestRunStatus | 'all'>('all')
 const environmentFilter = ref('all')
 const dateFrom = ref('')
 const dateTo = ref('')
 const page = ref(1)
 const limit = 20
+
+// TestRunFilters component v-model
+const filterModel = computed({
+  get: () => ({
+    status: statusFilter.value,
+    environment: environmentFilter.value,
+    dateFrom: dateFrom.value,
+    dateTo: dateTo.value,
+  }),
+  set: (val: { status: string; environment: string; dateFrom: string; dateTo: string }) => {
+    statusFilter.value = val.status as TestRunStatus | 'all'
+    environmentFilter.value = val.environment
+    dateFrom.value = val.dateFrom
+    dateTo.value = val.dateTo
+  },
+})
 
 const statusOptions = [
   { label: 'All Statuses', value: 'all' },
@@ -56,8 +73,14 @@ async function loadRuns() {
     if (dateTo.value) filters.dateTo = dateTo.value
 
     const response = await getRuns(projectId.value, filters)
-    runs.value = response.data
-    total.value = response.total
+    // If testCaseId filter is active, filter client-side
+    if (testCaseIdFilter.value) {
+      runs.value = response.data.filter((r) => r.testCaseId === testCaseIdFilter.value)
+      total.value = runs.value.length
+    } else {
+      runs.value = response.data
+      total.value = response.total
+    }
   } finally {
     loading.value = false
   }
@@ -78,7 +101,22 @@ function formatDuration(seconds: number | null): string {
   return `${mins}m ${secs}s`
 }
 
+function navigateToRun(runId: string) {
+  navigateTo(`/projects/${projectId.value}/test-runs/${runId}`)
+}
+
+function clearTestCaseFilter() {
+  testCaseIdFilter.value = ''
+  loadRuns()
+}
+
 const totalPages = computed(() => Math.ceil(total.value / limit))
+
+// Find the test case name from the first matching run for display
+const filteredTestCaseName = computed(() => {
+  if (!testCaseIdFilter.value || runs.value.length === 0) return null
+  return runs.value[0]?.testCase?.name ?? null
+})
 </script>
 
 <template>
@@ -91,37 +129,22 @@ const totalPages = computed(() => Math.ceil(total.value / limit))
       </p>
     </div>
 
-    <!-- Filters -->
-    <div class="flex flex-col sm:flex-row gap-3">
-      <USelect
-        v-model="statusFilter"
-        :items="statusOptions"
-        value-key="value"
-        size="sm"
-        class="w-40"
-      />
-      <USelect
-        v-model="environmentFilter"
-        :items="environmentOptions"
-        value-key="value"
-        size="sm"
-        class="w-44"
-      />
-      <UInput
-        v-model="dateFrom"
-        type="date"
-        placeholder="From date"
-        size="sm"
-        class="w-40"
-      />
-      <UInput
-        v-model="dateTo"
-        type="date"
-        placeholder="To date"
-        size="sm"
-        class="w-40"
-      />
+    <!-- Test case filter banner -->
+    <div
+      v-if="testCaseIdFilter"
+      class="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded-lg p-3 flex items-center justify-between"
+    >
+      <span class="text-sm text-indigo-700 dark:text-indigo-300">
+        <UIcon name="i-lucide-filter" class="inline mr-1" />
+        Filtered by test case: <strong>{{ filteredTestCaseName ?? testCaseIdFilter }}</strong>
+      </span>
+      <UButton size="xs" variant="ghost" color="neutral" icon="i-lucide-x" @click="clearTestCaseFilter">
+        Clear Filter
+      </UButton>
     </div>
+
+    <!-- Filters -->
+    <TestRunFilters :project-id="projectId" v-model="filterModel" />
 
     <!-- Loading -->
     <div v-if="loading" class="space-y-2">
@@ -131,21 +154,22 @@ const totalPages = computed(() => Math.ceil(total.value / limit))
     <!-- Empty state -->
     <div
       v-else-if="runs.length === 0"
+      data-testid="test-runs-empty-state"
       class="text-center py-16 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg"
     >
       <UIcon name="i-lucide-history" class="text-4xl text-gray-400 dark:text-gray-400 mb-3" />
       <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-        {{ statusFilter !== 'all' || environmentFilter !== 'all' || dateFrom || dateTo ? 'No results match your filters' : 'No test runs yet' }}
+        {{ statusFilter !== 'all' || environmentFilter !== 'all' || dateFrom || dateTo || testCaseIdFilter ? 'No results match your filters' : 'No test runs yet' }}
       </h3>
       <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-        {{ statusFilter !== 'all' || environmentFilter !== 'all' || dateFrom || dateTo ? 'Try adjusting your filters.' : 'Run a test case to see results here.' }}
+        {{ statusFilter !== 'all' || environmentFilter !== 'all' || dateFrom || dateTo || testCaseIdFilter ? 'Try adjusting your filters.' : 'Run a test case to see results here.' }}
       </p>
     </div>
 
     <!-- Runs table -->
     <UCard v-else>
       <div class="overflow-x-auto">
-        <table class="w-full text-sm">
+        <table data-testid="test-runs-table" class="w-full text-sm">
           <thead>
             <tr class="border-b border-gray-200 dark:border-gray-700">
               <th class="text-left py-3 px-4 font-medium text-gray-500 dark:text-gray-400">Test Case</th>
@@ -160,26 +184,42 @@ const totalPages = computed(() => Math.ceil(total.value / limit))
             <tr
               v-for="run in runs"
               :key="run.id"
-              class="border-b border-gray-100 dark:border-gray-800 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-800/50"
+              :data-testid="`test-run-row-${run.id}`"
+              :class="[
+                'border-b border-gray-100 dark:border-gray-800 last:border-0 cursor-pointer transition-colors',
+                run.status === 'IN_PROGRESS'
+                  ? 'bg-amber-50/50 dark:bg-amber-950/10 hover:bg-amber-50 dark:hover:bg-amber-950/20'
+                  : 'hover:bg-gray-50 dark:hover:bg-gray-800/50',
+              ]"
+              @click="navigateToRun(run.id)"
             >
               <td class="py-3 px-4">
-                <NuxtLink
+                <span
                   v-if="run.testCase"
-                  :to="`/projects/${projectId}/test-cases/${run.testCaseId}`"
-                  class="font-medium text-gray-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400"
+                  data-testid="test-runs-test-case-name"
+                  class="font-medium text-gray-900 dark:text-white"
                 >
                   {{ run.testCase.name }}
-                </NuxtLink>
+                </span>
                 <span v-else class="text-gray-500 dark:text-gray-400">Unknown</span>
               </td>
-              <td class="py-3 px-4">
+              <td data-testid="test-runs-status-badge" class="py-3 px-4">
                 <TestStatusBadge :status="run.status" />
               </td>
-              <td class="py-3 px-4 text-gray-700 dark:text-gray-300 capitalize">
-                {{ run.environment }}
+              <td class="py-3 px-4">
+                <TestEnvironmentBadge :environment="run.environment" />
               </td>
-              <td class="py-3 px-4 text-gray-700 dark:text-gray-300">
-                {{ run.executedBy?.name ?? 'Unknown' }}
+              <td class="py-3 px-4">
+                <div class="flex items-center gap-2">
+                  <UAvatar
+                    :text="run.executedBy?.name?.charAt(0) ?? '?'"
+                    :src="run.executedBy?.avatarUrl ?? undefined"
+                    size="2xs"
+                  />
+                  <span class="text-gray-700 dark:text-gray-300">
+                    {{ run.executedBy?.name ?? 'Unknown' }}
+                  </span>
+                </div>
               </td>
               <td class="py-3 px-4 text-gray-500 dark:text-gray-400 text-xs">
                 {{ new Date(run.executedAt).toLocaleString() }}

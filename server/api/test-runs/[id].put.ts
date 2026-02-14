@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { requireAuth } from '~/server/utils/auth'
 import { prisma } from '~/server/utils/db'
 import { logActivity } from '~/server/utils/activity'
+import { updateTestCaseLastRun } from '~/server/utils/testRunHelper'
 
 const updateTestRunSchema = z.object({
   status: z.enum(['NOT_RUN', 'IN_PROGRESS', 'PASS', 'FAIL', 'BLOCKED', 'SKIPPED']).optional(),
@@ -55,44 +56,21 @@ export default defineEventHandler(async (event) => {
 
   const updateData = result.data
 
-  // Use a transaction to ensure consistency between test run and test case updates
-  const updatedRun = await prisma.$transaction(async (tx) => {
-    // Update test run
-    const run = await tx.testRun.update({
-      where: { id: runId },
-      data: updateData,
-      include: {
-        testCase: {
-          select: { id: true, name: true, testType: true, projectId: true },
-        },
-        executedBy: {
-          select: { id: true, name: true, email: true, avatarUrl: true },
-        },
+  const updatedRun = await prisma.testRun.update({
+    where: { id: runId },
+    data: updateData,
+    include: {
+      testCase: {
+        select: { id: true, name: true, testType: true, projectId: true },
       },
-    })
-
-    // If status changed, check if this is the most recent run before updating test case
-    if (updateData.status) {
-      const mostRecentRun = await tx.testRun.findFirst({
-        where: { testCaseId: testRun.testCaseId },
-        orderBy: { executedAt: 'desc' },
-        select: { id: true, status: true, executedAt: true },
-      })
-
-      // Only update test case lastRunStatus if this run is the most recent one
-      if (mostRecentRun && mostRecentRun.id === runId) {
-        await tx.testCase.update({
-          where: { id: testRun.testCaseId },
-          data: {
-            lastRunStatus: updateData.status,
-            lastRunAt: new Date(),
-          },
-        })
-      }
-    }
-
-    return run
+      executedBy: {
+        select: { id: true, name: true, email: true, avatarUrl: true },
+      },
+    },
   })
+
+  // Recalculate test case lastRunStatus based on the most recent run
+  await updateTestCaseLastRun(updatedRun.testCase.id)
 
   await logActivity(user.id, 'UPDATED', 'TestRun', runId, updateData)
 

@@ -116,6 +116,11 @@ const allSelected = computed(() => {
 })
 
 const totalPages = computed(() => Math.ceil(total.value / limit))
+
+// Count of debug-flagged test cases for the button badge
+const debugFlaggedCount = computed(() => {
+  return testCases.value.filter((tc) => tc.debugFlag).length
+})
 </script>
 
 <template>
@@ -124,22 +129,34 @@ const totalPages = computed(() => Math.ceil(total.value / limit))
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div>
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Test Cases</h1>
-        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        <p data-testid="test-cases-count" class="mt-1 text-sm text-gray-500 dark:text-gray-400">
           {{ total }} test case{{ total !== 1 ? 's' : '' }} in this project
         </p>
       </div>
-      <UButton
-        icon="i-lucide-plus"
-        @click="navigateTo(`/projects/${projectId}/test-cases/new`)"
-      >
-        Create Test Case
-      </UButton>
+      <div class="flex items-center gap-2">
+        <UButton
+          icon="i-lucide-bug"
+          variant="outline"
+          color="neutral"
+          @click="navigateTo(`/projects/${projectId}/debug-queue`)"
+        >
+          Debug Queue
+        </UButton>
+        <UButton
+          data-testid="test-cases-create-button"
+          icon="i-lucide-plus"
+          @click="navigateTo(`/projects/${projectId}/test-cases/new`)"
+        >
+          Create Test Case
+        </UButton>
+      </div>
     </div>
 
     <!-- Filters -->
     <div class="flex flex-col sm:flex-row gap-3">
       <UInput
         v-model="search"
+        data-testid="test-cases-search-input"
         icon="i-lucide-search"
         placeholder="Search test cases..."
         class="flex-1"
@@ -193,13 +210,14 @@ const totalPages = computed(() => Math.ceil(total.value / limit))
     <!-- Empty state -->
     <div
       v-else-if="testCases.length === 0"
+      data-testid="test-cases-empty-state"
       class="text-center py-16 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg"
     >
       <UIcon name="i-lucide-test-tubes" class="text-4xl text-gray-400 dark:text-gray-400 mb-3" />
       <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
         {{ search || statusFilter !== 'all' || typeFilter !== 'all' || debugFilter !== 'all' ? 'No results found' : 'No test cases yet' }}
       </h3>
-      <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 mb-4">
+      <p data-testid="test-cases-empty-state-description" class="text-sm text-gray-500 dark:text-gray-400 mt-1 mb-4">
         {{ search || statusFilter !== 'all' || typeFilter !== 'all' || debugFilter !== 'all' ? 'Try adjusting your filters.' : 'Create your first test case to start testing.' }}
       </p>
       <UButton
@@ -214,7 +232,7 @@ const totalPages = computed(() => Math.ceil(total.value / limit))
     <!-- Test cases table -->
     <UCard v-else>
       <div class="overflow-x-auto">
-        <table class="w-full text-sm">
+        <table data-testid="test-cases-table" class="w-full text-sm">
           <thead>
             <tr class="border-b border-gray-200 dark:border-gray-700">
               <th class="text-left py-3 px-4 w-8">
@@ -235,6 +253,7 @@ const totalPages = computed(() => Math.ceil(total.value / limit))
             <tr
               v-for="tc in testCases"
               :key="tc.id"
+              :data-testid="`test-case-row-${tc.id}`"
               class="border-b border-gray-100 dark:border-gray-800 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-800/50"
             >
               <td class="py-3 px-4" @click.stop>
@@ -246,6 +265,7 @@ const totalPages = computed(() => Math.ceil(total.value / limit))
               <td class="py-3 px-4">
                 <NuxtLink
                   :to="`/projects/${projectId}/test-cases/${tc.id}`"
+                  :data-testid="`test-case-row-${tc.id}-name`"
                   class="font-medium text-gray-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400"
                 >
                   {{ tc.name }}
@@ -266,6 +286,7 @@ const totalPages = computed(() => Math.ceil(total.value / limit))
               <td class="py-3 px-4 text-center" @click.stop>
                 <button
                   class="inline-flex"
+                  :data-testid="`test-case-row-${tc.id}-debug-toggle`"
                   :title="tc.debugFlag ? 'Remove debug flag' : 'Flag for debug'"
                   @click="handleToggleDebug(tc.id)"
                 >

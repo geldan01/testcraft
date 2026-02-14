@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { Prisma } from '@prisma/client'
 import { requireAuth } from '~/server/utils/auth'
 import { prisma } from '~/server/utils/db'
 import { logActivity } from '~/server/utils/activity'
@@ -73,9 +74,9 @@ export default defineEventHandler(async (event) => {
       name: caseData.name,
       description: caseData.description,
       projectId,
-      preconditions: caseData.preconditions ?? null,
+      preconditions: caseData.preconditions ?? Prisma.JsonNull,
       testType: caseData.testType,
-      steps: caseData.steps ?? null,
+      steps: caseData.steps ?? Prisma.JsonNull,
       gherkinSyntax: caseData.gherkinSyntax,
       createdById: user.id,
     },

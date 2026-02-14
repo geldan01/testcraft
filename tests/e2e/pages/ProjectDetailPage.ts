@@ -12,26 +12,28 @@ export class ProjectDetailPage {
   get main(): Locator { return this.page.getByRole('main') }
 
   heading(name: string): Locator { return this.page.getByRole('heading', { name }) }
-  description(text: string): Locator { return this.page.getByText(text) }
+  get description(): Locator { return this.page.getByTestId('project-detail-description') }
 
-  statLabel(label: string): Locator { return this.main.locator('p').filter({ hasText: label }) }
-  statValue(value: string, exact = false): Locator { return this.main.getByText(value, { exact }) }
+  get statsContainer(): Locator { return this.page.getByTestId('project-detail-stats') }
+  stat(name: 'test-cases' | 'test-plans' | 'test-suites' | 'members'): Locator {
+    return this.page.getByTestId(`project-detail-stat-${name}`)
+  }
 
   get overviewTab(): Locator { return this.page.getByRole('tab', { name: 'Overview' }) }
   get testPlansTab(): Locator { return this.page.getByRole('tab', { name: 'Test Plans' }) }
   get testSuitesTab(): Locator { return this.page.getByRole('tab', { name: 'Test Suites' }) }
   get testCasesTab(): Locator { return this.page.getByRole('tab', { name: 'Test Cases' }) }
 
-  get createTestCaseButton(): Locator { return this.page.getByRole('button', { name: 'Create Test Case' }) }
-  get viewTestPlansButton(): Locator { return this.page.getByRole('button', { name: 'View Test Plans' }) }
-  get viewRunHistoryButton(): Locator { return this.page.getByRole('button', { name: 'View Run History' }) }
+  get createTestCaseButton(): Locator { return this.page.getByTestId('project-detail-create-test-case') }
+  get viewTestPlansButton(): Locator { return this.page.getByTestId('project-detail-view-test-plans') }
+  get viewRunHistoryButton(): Locator { return this.page.getByTestId('project-detail-view-run-history') }
 
-  get projectDetailsCard(): Locator { return this.page.getByText('Project Details') }
-  get createdLabel(): Locator { return this.page.getByText('Created') }
-  get lastUpdatedLabel(): Locator { return this.page.getByText('Last Updated') }
-  get organizationLabel(): Locator { return this.page.getByText('Organization', { exact: true }) }
-  get projectSettingsButton(): Locator { return this.page.getByRole('button', { name: 'Project Settings' }) }
+  get projectDetailsCard(): Locator { return this.page.getByTestId('project-detail-info-card') }
+  get createdLabel(): Locator { return this.page.getByTestId('project-detail-created') }
+  get lastUpdatedLabel(): Locator { return this.page.getByTestId('project-detail-last-updated') }
+  get organizationLabel(): Locator { return this.page.getByTestId('project-detail-organization') }
+  get projectSettingsButton(): Locator { return this.page.getByTestId('project-detail-settings-button') }
 
-  get notFoundMessage(): Locator { return this.page.getByText('Project not found') }
-  get backButton(): Locator { return this.page.getByRole('button', { name: 'Back to Organizations' }) }
+  get notFoundMessage(): Locator { return this.page.getByTestId('project-detail-not-found') }
+  get backButton(): Locator { return this.page.getByTestId('project-detail-back-button') }
 }
