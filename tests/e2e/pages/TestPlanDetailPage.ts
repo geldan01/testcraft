@@ -9,21 +9,21 @@ export class TestPlanDetailPage {
   }
 
   heading(name: string): Locator { return this.page.getByRole('heading', { name }) }
-  get editButton(): Locator { return this.page.getByRole('button', { name: 'Edit', exact: true }) }
-  get addTestCasesButton(): Locator { return this.page.getByRole('button', { name: 'Add Test Cases' }) }
+  get editButton(): Locator { return this.page.getByTestId('test-plan-detail-edit-button') }
+  get addTestCasesButton(): Locator { return this.page.getByTestId('test-plan-detail-add-cases-button') }
 
-  get createdByText(): Locator { return this.page.getByText(/Created by/) }
-  get scopeCard(): Locator { return this.page.getByText('Scope') }
-  get entryCriteriaCard(): Locator { return this.page.getByText('Entry Criteria') }
-  get exitCriteriaCard(): Locator { return this.page.getByText('Exit Criteria') }
+  get createdByText(): Locator { return this.page.getByTestId('test-plan-detail-created-by') }
+  get scopeCard(): Locator { return this.page.getByTestId('test-plan-detail-scope-card') }
+  get entryCriteriaCard(): Locator { return this.page.getByTestId('test-plan-detail-entry-criteria-card') }
+  get exitCriteriaCard(): Locator { return this.page.getByTestId('test-plan-detail-exit-criteria-card') }
 
-  get linkedCasesHeading(): Locator { return this.page.getByText(/Linked Test Cases/) }
-  linkedCaseName(name: string): Locator { return this.page.getByText(name) }
-  get unlinkButtons(): Locator { return this.page.getByLabel('Unlink test case') }
-  get noCasesMessage(): Locator { return this.page.getByText('No test cases linked to this plan yet.') }
+  get linkedCasesHeading(): Locator { return this.page.getByRole('heading', { name: /Linked Test Cases/ }) }
+  linkedCaseName(name: string): Locator { return this.page.getByTestId('test-plan-detail-linked-case-name').filter({ hasText: name }) }
+  get unlinkButtons(): Locator { return this.page.getByTestId('test-plan-detail-unlink-button') }
+  get noCasesMessage(): Locator { return this.page.getByTestId('test-plan-detail-no-cases-message') }
 
   get addTestCasesModal(): AddTestCasesModal { return new AddTestCasesModal(this.page) }
 
-  get notFoundMessage(): Locator { return this.page.getByText('Test Plan not found') }
-  get backButton(): Locator { return this.page.getByRole('button', { name: 'Back to Test Plans' }) }
+  get notFoundMessage(): Locator { return this.page.getByTestId('test-plan-detail-not-found') }
+  get backButton(): Locator { return this.page.getByTestId('test-plan-detail-back-button') }
 }

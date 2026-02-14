@@ -132,7 +132,7 @@ async function handleUnlinkCase(caseId: string) {
           <p v-if="plan.description" class="text-sm text-gray-500 dark:text-gray-400">
             {{ plan.description }}
           </p>
-          <p class="text-xs text-gray-400 dark:text-gray-400">
+          <p data-testid="test-plan-detail-created-by" class="text-xs text-gray-400 dark:text-gray-400">
             Created by {{ plan.createdBy?.name ?? 'Unknown' }} on
             {{ new Date(plan.createdAt).toLocaleDateString() }}
           </p>
@@ -154,6 +154,7 @@ async function handleUnlinkCase(caseId: string) {
 
         <div v-if="!editing" class="flex gap-2">
           <UButton
+            data-testid="test-plan-detail-edit-button"
             icon="i-lucide-pencil"
             variant="outline"
             color="neutral"
@@ -163,6 +164,7 @@ async function handleUnlinkCase(caseId: string) {
             Edit
           </UButton>
           <UButton
+            data-testid="test-plan-detail-add-cases-button"
             icon="i-lucide-plus"
             size="sm"
             @click="openAddCasesModal"
@@ -174,19 +176,19 @@ async function handleUnlinkCase(caseId: string) {
 
       <!-- Plan details -->
       <div v-if="plan.scope || plan.entryCriteria || plan.exitCriteria" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <UCard v-if="plan.scope" :ui="{ header: 'bg-gray-500/20 dark:bg-gray-500/10' }">
+        <UCard v-if="plan.scope" data-testid="test-plan-detail-scope-card" :ui="{ header: 'bg-gray-500/20 dark:bg-gray-500/10' }">
           <template #header>
             <h3 class="text-sm font-semibold text-black dark:text-white">Scope</h3>
           </template>
           <p class="text-sm text-gray-600 dark:text-gray-400">{{ plan.scope }}</p>
         </UCard>
-        <UCard v-if="plan.entryCriteria" :ui="{ header: 'bg-gray-500/20 dark:bg-gray-500/10' }">
+        <UCard v-if="plan.entryCriteria" data-testid="test-plan-detail-entry-criteria-card" :ui="{ header: 'bg-gray-500/20 dark:bg-gray-500/10' }">
           <template #header>
             <h3 class="text-sm font-semibold text-black dark:text-white">Entry Criteria</h3>
           </template>
           <p class="text-sm text-gray-600 dark:text-gray-400">{{ plan.entryCriteria }}</p>
         </UCard>
-        <UCard v-if="plan.exitCriteria" :ui="{ header: 'bg-gray-500/20 dark:bg-gray-500/10' }">
+        <UCard v-if="plan.exitCriteria" data-testid="test-plan-detail-exit-criteria-card" :ui="{ header: 'bg-gray-500/20 dark:bg-gray-500/10' }">
           <template #header>
             <h3 class="text-sm font-semibold text-black dark:text-white">Exit Criteria</h3>
           </template>
@@ -205,7 +207,7 @@ async function handleUnlinkCase(caseId: string) {
           class="text-center py-12 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg"
         >
           <UIcon name="i-lucide-link" class="text-3xl text-gray-400 dark:text-gray-400 mb-2" />
-          <p class="text-sm text-gray-500 dark:text-gray-400">
+          <p data-testid="test-plan-detail-no-cases-message" class="text-sm text-gray-500 dark:text-gray-400">
             No test cases linked to this plan yet.
           </p>
         </div>
@@ -219,6 +221,7 @@ async function handleUnlinkCase(caseId: string) {
             >
               <NuxtLink
                 :to="`/projects/${projectId}/test-cases/${tc.id}`"
+                data-testid="test-plan-detail-linked-case-name"
                 class="flex items-center gap-3 min-w-0 flex-1 hover:text-indigo-600 dark:hover:text-indigo-400"
               >
                 <TestStatusBadge :status="tc.lastRunStatus" size="sm" />
@@ -232,6 +235,7 @@ async function handleUnlinkCase(caseId: string) {
                 </div>
               </NuxtLink>
               <UButton
+                data-testid="test-plan-detail-unlink-button"
                 icon="i-lucide-unlink"
                 variant="ghost"
                 color="error"
@@ -246,10 +250,10 @@ async function handleUnlinkCase(caseId: string) {
     </template>
 
     <!-- Not found -->
-    <div v-else class="text-center py-16">
+    <div v-else data-testid="test-plan-detail-not-found" class="text-center py-16">
       <UIcon name="i-lucide-search-x" class="text-4xl text-gray-400 dark:text-gray-400 mb-3" />
       <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Test Plan not found</h2>
-      <UButton class="mt-4" variant="outline" @click="navigateTo(`/projects/${projectId}/test-plans`)">
+      <UButton data-testid="test-plan-detail-back-button" class="mt-4" variant="outline" @click="navigateTo(`/projects/${projectId}/test-plans`)">
         Back to Test Plans
       </UButton>
     </div>
@@ -259,11 +263,13 @@ async function handleUnlinkCase(caseId: string) {
       v-model:open="showAddCasesModal"
       title="Add Test Cases"
       description="Select test cases to link to this plan."
+      data-testid="add-test-cases-modal"
     >
       <template #body>
         <div class="space-y-4">
           <UInput
             v-model="searchQuery"
+            data-testid="add-test-cases-modal-search"
             icon="i-lucide-search"
             placeholder="Search test cases..."
             class="w-full"
@@ -274,7 +280,7 @@ async function handleUnlinkCase(caseId: string) {
           </div>
 
           <div v-else-if="filteredAvailableCases.length === 0" class="text-center py-8">
-            <p class="text-sm text-gray-500 dark:text-gray-400">
+            <p data-testid="add-test-cases-modal-all-linked-message" class="text-sm text-gray-500 dark:text-gray-400">
               {{ availableCases.length === 0 ? 'All test cases are already linked to this plan.' : 'No test cases match your search.' }}
             </p>
           </div>
@@ -283,6 +289,7 @@ async function handleUnlinkCase(caseId: string) {
             <label
               v-for="tc in filteredAvailableCases"
               :key="tc.id"
+              data-testid="add-test-cases-modal-case-name"
               class="flex items-center gap-3 px-3 py-2.5 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
             >
               <UCheckbox
@@ -301,15 +308,15 @@ async function handleUnlinkCase(caseId: string) {
             </label>
           </div>
 
-          <p v-if="selectedCaseIds.size > 0" class="text-xs text-gray-500 dark:text-gray-400">
+          <p v-if="selectedCaseIds.size > 0" data-testid="add-test-cases-modal-selection-count" class="text-xs text-gray-500 dark:text-gray-400">
             {{ selectedCaseIds.size }} test case{{ selectedCaseIds.size === 1 ? '' : 's' }} selected
           </p>
         </div>
       </template>
       <template #footer>
         <div class="flex justify-end gap-3">
-          <UButton variant="ghost" color="neutral" @click="showAddCasesModal = false">Cancel</UButton>
-          <UButton :disabled="selectedCaseIds.size === 0 || linking" :loading="linking" @click="handleLinkSelected">
+          <UButton data-testid="add-test-cases-modal-cancel-button" variant="ghost" color="neutral" @click="showAddCasesModal = false">Cancel</UButton>
+          <UButton data-testid="add-test-cases-modal-submit" :disabled="selectedCaseIds.size === 0 || linking" :loading="linking" @click="handleLinkSelected">
             Link {{ selectedCaseIds.size || '' }} Test Case{{ selectedCaseIds.size === 1 ? '' : 's' }}
           </UButton>
         </div>

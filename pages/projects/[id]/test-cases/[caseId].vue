@@ -200,6 +200,26 @@ function formatDuration(seconds: number | null): string {
   const secs = seconds % 60
   return `${mins}m ${secs}s`
 }
+
+function formatRelativeTime(dateStr: string): string {
+  const now = Date.now()
+  const then = new Date(dateStr).getTime()
+  const diffMs = now - then
+  const diffSecs = Math.floor(diffMs / 1000)
+
+  if (diffSecs < 60) return 'just now'
+  const diffMins = Math.floor(diffSecs / 60)
+  if (diffMins < 60) return `${diffMins}m ago`
+  const diffHours = Math.floor(diffMins / 60)
+  if (diffHours < 24) return `${diffHours}h ago`
+  const diffDays = Math.floor(diffHours / 24)
+  if (diffDays < 30) return `${diffDays}d ago`
+  const diffMonths = Math.floor(diffDays / 30)
+  if (diffMonths < 12) return `${diffMonths}mo ago`
+  return `${Math.floor(diffMonths / 12)}y ago`
+}
+
+const recentRuns = computed(() => runs.value.slice(0, 5))
 </script>
 
 <template>
@@ -219,11 +239,12 @@ function formatDuration(seconds: number | null): string {
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
               {{ testCase.name }}
             </h1>
-            <TestStatusBadge :status="testCase.lastRunStatus" />
+            <TestStatusBadge :status="testCase.lastRunStatus" data-testid="test-case-detail-status" />
             <UBadge
               :color="testCase.testType === 'STEP_BASED' ? 'primary' : 'info'"
               variant="subtle"
               size="sm"
+              data-testid="test-case-detail-type-badge"
             >
               {{ testCase.testType === 'STEP_BASED' ? 'Step-Based' : 'Gherkin' }}
             </UBadge>
@@ -231,10 +252,16 @@ function formatDuration(seconds: number | null): string {
           <p v-if="testCase.description" class="text-sm text-gray-500 dark:text-gray-400">
             {{ testCase.description }}
           </p>
-          <p class="text-xs text-gray-400 dark:text-gray-400">
-            Created by {{ testCase.createdBy?.name ?? 'Unknown' }} on
-            {{ new Date(testCase.createdAt).toLocaleDateString() }}
-          </p>
+          <div class="flex items-center gap-3 flex-wrap text-xs text-gray-400 dark:text-gray-400">
+            <span>
+              Created by {{ testCase.createdBy?.name ?? 'Unknown' }} on
+              {{ new Date(testCase.createdAt).toLocaleDateString() }}
+            </span>
+            <span v-if="testCase.lastRunAt" class="flex items-center gap-1">
+              <UIcon name="i-lucide-clock" class="text-sm" />
+              Last run: {{ formatRelativeTime(testCase.lastRunAt) }}
+            </span>
+          </div>
         </div>
 
         <div class="flex items-center gap-2 shrink-0">
@@ -246,6 +273,7 @@ function formatDuration(seconds: number | null): string {
           />
           <UButton
             icon="i-lucide-play"
+            data-testid="test-case-detail-run-test-button"
             @click="showRunExecutor = true"
           >
             Run Test
@@ -255,6 +283,7 @@ function formatDuration(seconds: number | null): string {
             variant="outline"
             color="neutral"
             size="sm"
+            data-testid="test-case-detail-edit-button"
           >
             Edit
           </UButton>
@@ -281,12 +310,12 @@ function formatDuration(seconds: number | null): string {
       <!-- Test Steps (Step-Based) -->
       <UCard v-if="testCase.testType === 'STEP_BASED' && testCase.steps && testCase.steps.length > 0" :ui="{ header: 'bg-gray-500/20 dark:bg-gray-500/10' }">
         <template #header>
-          <h3 class="text-sm font-semibold text-black dark:text-white">
+          <h3 class="text-sm font-semibold text-black dark:text-white" data-testid="test-case-detail-steps-heading">
             Test Steps ({{ testCase.steps.length }})
           </h3>
         </template>
         <div class="overflow-x-auto">
-          <table class="w-full text-sm">
+          <table class="w-full text-sm" data-testid="test-case-detail-steps-table">
             <thead>
               <tr class="border-b border-gray-200 dark:border-gray-700">
                 <th class="text-left py-2 px-3 font-medium text-gray-500 dark:text-gray-400 w-12">#</th>
@@ -327,16 +356,16 @@ function formatDuration(seconds: number | null): string {
         <UCard :ui="{ header: 'bg-gray-500/20 dark:bg-gray-500/10' }">
           <template #header>
             <div class="flex items-center justify-between">
-              <h3 class="text-sm font-semibold text-black dark:text-white">
+              <h3 class="text-sm font-semibold text-black dark:text-white" data-testid="test-case-detail-plans-heading">
                 Test Plans ({{ linkedPlans.length }})
               </h3>
-              <UButton icon="i-lucide-plus" size="xs" color="neutral" variant="link" @click="openAddPlansModal">
+              <UButton icon="i-lucide-plus" size="xs" color="neutral" variant="link" data-testid="test-case-detail-add-plan-button" @click="openAddPlansModal">
                 Add
               </UButton>
             </div>
           </template>
 
-          <div v-if="linkedPlans.length === 0" class="text-center py-6 text-sm text-gray-500 dark:text-gray-400">
+          <div v-if="linkedPlans.length === 0" class="text-center py-6 text-sm text-gray-500 dark:text-gray-400" data-testid="test-case-detail-no-plan-message">
             Not part of any test plan.
           </div>
 
@@ -358,6 +387,7 @@ function formatDuration(seconds: number | null): string {
                 color="error"
                 size="xs"
                 aria-label="Remove from plan"
+                data-testid="test-case-detail-remove-plan-button"
                 @click="handleUnlinkPlan(plan.id)"
               />
             </div>
@@ -368,16 +398,16 @@ function formatDuration(seconds: number | null): string {
         <UCard :ui="{ header: 'bg-gray-500/20 dark:bg-gray-500/10' }">
           <template #header>
             <div class="flex items-center justify-between">
-              <h3 class="text-sm font-semibold text-black dark:text-white">
+              <h3 class="text-sm font-semibold text-black dark:text-white" data-testid="test-case-detail-suites-heading">
                 Test Suites ({{ linkedSuites.length }})
               </h3>
-              <UButton icon="i-lucide-plus" size="xs" color="neutral" variant="link" @click="openAddSuitesModal">
+              <UButton icon="i-lucide-plus" size="xs" color="neutral" variant="link" data-testid="test-case-detail-add-suite-button" @click="openAddSuitesModal">
                 Add
               </UButton>
             </div>
           </template>
 
-          <div v-if="linkedSuites.length === 0" class="text-center py-6 text-sm text-gray-500 dark:text-gray-400">
+          <div v-if="linkedSuites.length === 0" class="text-center py-6 text-sm text-gray-500 dark:text-gray-400" data-testid="test-case-detail-no-suite-message">
             Not part of any test suite.
           </div>
 
@@ -404,6 +434,7 @@ function formatDuration(seconds: number | null): string {
                 color="error"
                 size="xs"
                 aria-label="Remove from suite"
+                data-testid="test-case-detail-remove-suite-button"
                 @click="handleUnlinkSuite(suite.id)"
               />
             </div>
@@ -411,26 +442,35 @@ function formatDuration(seconds: number | null): string {
         </UCard>
       </div>
 
-      <!-- Test Run History -->
+      <!-- Test Run History (compact, last 5 runs) -->
       <UCard :ui="{ header: 'bg-gray-500/20 dark:bg-gray-500/10' }">
         <template #header>
           <div class="flex items-center justify-between">
-            <h3 class="text-sm font-semibold text-black dark:text-white">
+            <h3 class="text-sm font-semibold text-black dark:text-white" data-testid="test-case-detail-run-history-heading">
               Run History ({{ runs.length }})
             </h3>
-            <UButton
-              icon="i-lucide-play"
-              size="xs"
-              color="neutral"
-              variant="link"
-              @click="showRunExecutor = true"
-            >
-              New Run
-            </UButton>
+            <div class="flex items-center gap-2">
+              <NuxtLink
+                v-if="runs.length > 5"
+                :to="`/projects/${projectId}/runs?testCaseId=${caseId}`"
+                class="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
+              >
+                View All Runs
+              </NuxtLink>
+              <UButton
+                icon="i-lucide-play"
+                size="xs"
+                color="neutral"
+                variant="link"
+                @click="showRunExecutor = true"
+              >
+                New Run
+              </UButton>
+            </div>
           </div>
         </template>
 
-        <div v-if="runs.length === 0" class="text-center py-8 text-sm text-gray-500 dark:text-gray-400">
+        <div v-if="runs.length === 0" class="text-center py-8 text-sm text-gray-500 dark:text-gray-400" data-testid="test-case-detail-no-runs-message">
           No test runs recorded yet.
         </div>
 
@@ -448,21 +488,22 @@ function formatDuration(seconds: number | null): string {
             </thead>
             <tbody>
               <tr
-                v-for="run in runs"
+                v-for="run in recentRuns"
                 :key="run.id"
-                class="border-b border-gray-100 dark:border-gray-800 last:border-0"
+                class="border-b border-gray-100 dark:border-gray-800 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer"
+                @click="navigateTo(`/projects/${projectId}/test-runs/${run.id}`)"
               >
                 <td class="py-2 px-3">
                   <TestStatusBadge :status="run.status" />
                 </td>
-                <td class="py-2 px-3 text-gray-700 dark:text-gray-300 capitalize">
-                  {{ run.environment }}
+                <td class="py-2 px-3">
+                  <TestEnvironmentBadge :environment="run.environment" />
                 </td>
                 <td class="py-2 px-3 text-gray-700 dark:text-gray-300">
                   {{ run.executedBy?.name ?? 'Unknown' }}
                 </td>
                 <td class="py-2 px-3 text-gray-500 dark:text-gray-400 text-xs">
-                  {{ new Date(run.executedAt).toLocaleString() }}
+                  {{ formatRelativeTime(run.executedAt) }}
                 </td>
                 <td class="py-2 px-3 text-gray-500 dark:text-gray-400">
                   {{ formatDuration(run.duration) }}
@@ -473,27 +514,39 @@ function formatDuration(seconds: number | null): string {
               </tr>
             </tbody>
           </table>
+
+          <!-- View All link at bottom when there are more than 5 runs -->
+          <div v-if="runs.length > 5" class="text-center pt-3 border-t border-gray-100 dark:border-gray-800 mt-2">
+            <NuxtLink
+              :to="`/projects/${projectId}/runs?testCaseId=${caseId}`"
+              class="text-sm text-indigo-600 dark:text-indigo-400 hover:underline"
+            >
+              View all {{ runs.length }} runs
+            </NuxtLink>
+          </div>
         </div>
       </UCard>
 
       <!-- Comments -->
-      <UCard :ui="{ header: 'bg-gray-500/20 dark:bg-gray-500/10' }">
+      <UCard data-testid="comments-section" :ui="{ header: 'bg-gray-500/20 dark:bg-gray-500/10' }">
         <template #header>
-          <h3 class="text-sm font-semibold text-black dark:text-white">
+          <h3 class="text-sm font-semibold text-black dark:text-white" data-testid="comments-count">
             Comments ({{ comments.length }})
           </h3>
         </template>
 
         <!-- Add comment -->
-        <form class="flex gap-2 mb-4" @submit.prevent="handleAddComment">
+        <form data-testid="comments-form" class="flex gap-2 mb-4" @submit.prevent="handleAddComment">
           <UTextarea
             v-model="newComment"
+            data-testid="comments-input"
             placeholder="Add a comment..."
             :rows="1"
             autoresize
             class="flex-1"
           />
           <UButton
+            data-testid="comments-submit-button"
             type="submit"
             icon="i-lucide-send"
             size="sm"
@@ -517,20 +570,20 @@ function formatDuration(seconds: number | null): string {
             />
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2">
-                <span class="text-sm font-medium text-gray-900 dark:text-white">
+                <span data-testid="comments-author-name" class="text-sm font-medium text-gray-900 dark:text-white">
                   {{ comment.author?.name ?? 'Unknown' }}
                 </span>
                 <span class="text-xs text-gray-400 dark:text-gray-400">
                   {{ new Date(comment.createdAt).toLocaleString() }}
                 </span>
               </div>
-              <p class="text-sm text-gray-700 dark:text-gray-300 mt-1">
+              <p data-testid="comments-comment-text" class="text-sm text-gray-700 dark:text-gray-300 mt-1">
                 {{ comment.content }}
               </p>
             </div>
           </div>
         </div>
-        <p v-else class="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
+        <p v-else data-testid="comments-empty-message" class="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
           No comments yet.
         </p>
       </UCard>
@@ -542,7 +595,7 @@ function formatDuration(seconds: number | null): string {
             <h3 class="text-sm font-semibold text-black dark:text-white">
               Attachments ({{ attachments.length }})
             </h3>
-            <UButton icon="i-lucide-upload" size="xs" color="neutral" variant="link">
+            <UButton icon="i-lucide-upload" size="xs" color="neutral" variant="link" data-testid="test-case-detail-upload-button">
               Upload
             </UButton>
           </div>
@@ -573,6 +626,7 @@ function formatDuration(seconds: number | null): string {
               color="neutral"
               size="xs"
               aria-label="Download"
+              data-testid="test-case-detail-download-button"
             />
           </div>
         </div>
@@ -582,17 +636,19 @@ function formatDuration(seconds: number | null): string {
       <TestRunExecutor
         v-if="testCase"
         :test-case="testCase"
+        :project-id="projectId"
         :open="showRunExecutor"
         @update:open="showRunExecutor = $event"
         @completed="handleRunCompleted"
+        @saved-for-later="handleRunCompleted"
       />
     </template>
 
     <!-- Not found -->
     <div v-else class="text-center py-16">
       <UIcon name="i-lucide-search-x" class="text-4xl text-gray-400 dark:text-gray-400 mb-3" />
-      <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Test Case not found</h2>
-      <UButton class="mt-4" variant="outline" @click="navigateTo(`/projects/${projectId}/test-cases`)">
+      <h2 class="text-lg font-semibold text-gray-900 dark:text-white" data-testid="test-case-detail-not-found-message">Test Case not found</h2>
+      <UButton class="mt-4" variant="outline" data-testid="test-case-detail-back-button" @click="navigateTo(`/projects/${projectId}/test-cases`)">
         Back to Test Cases
       </UButton>
     </div>

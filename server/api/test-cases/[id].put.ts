@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { Prisma } from '@prisma/client'
 import { requireAuth } from '~/server/utils/auth'
 import { prisma } from '~/server/utils/db'
 import { logActivity } from '~/server/utils/activity'
@@ -59,9 +60,15 @@ export default defineEventHandler(async (event) => {
     })
   }
 
+  const data = {
+    ...result.data,
+    preconditions: result.data.preconditions === null ? Prisma.JsonNull : result.data.preconditions,
+    steps: result.data.steps === null ? Prisma.JsonNull : result.data.steps,
+  }
+
   const updated = await prisma.testCase.update({
     where: { id: caseId },
-    data: result.data,
+    data,
     include: {
       createdBy: {
         select: { id: true, name: true, email: true, avatarUrl: true },

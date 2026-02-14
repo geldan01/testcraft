@@ -71,10 +71,11 @@ export const useTestCase = () => {
     }
   }
 
-  async function toggleDebugFlag(caseId: string): Promise<TestCase | null> {
+  async function toggleDebugFlag(caseId: string, comment?: string): Promise<TestCase | null> {
     try {
       return await $fetch<TestCase>(`/api/test-cases/${caseId}/debug-flag`, {
         method: 'PUT',
+        body: comment ? { comment } : undefined,
       })
     } catch {
       return null

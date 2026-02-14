@@ -1,7 +1,8 @@
+import type { Pinia } from 'pinia'
 import { useAuthStore } from '~/stores/auth'
 
-export default defineNuxtPlugin(() => {
-  const authStore = useAuthStore()
+export default defineNuxtPlugin((nuxtApp) => {
+  const authStore = useAuthStore(nuxtApp.$pinia as Pinia)
 
   // Add a global interceptor to attach the auth token to all API requests
   globalThis.$fetch = globalThis.$fetch.create({

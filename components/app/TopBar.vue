@@ -68,6 +68,7 @@ const userMenuItems = computed(() => [
 
 <template>
   <header
+    data-testid="topbar"
     class="h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-6 shrink-0 sticky top-0 z-30"
   >
     <div class="flex items-center gap-4 min-w-0">
@@ -94,12 +95,13 @@ const userMenuItems = computed(() => [
         variant="ghost"
         color="neutral"
         size="sm"
+        data-testid="topbar-notifications"
         aria-label="Notifications"
       />
 
       <!-- User menu -->
       <UDropdownMenu :items="userMenuItems">
-        <UButton variant="ghost" color="neutral" class="p-0">
+        <UButton data-testid="topbar-user-menu" variant="ghost" color="neutral" class="p-0">
           <UAvatar
             :text="userInitials"
             :src="currentUser?.avatarUrl ?? undefined"

@@ -84,7 +84,7 @@ async function handleSubmit() {
       <h2 class="text-xl font-bold text-gray-900 dark:text-white">
         Create your account
       </h2>
-      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+      <p data-testid="register-subtitle" class="mt-1 text-sm text-gray-500 dark:text-gray-400">
         Get started with TestCraft in seconds.
       </p>
     </div>
@@ -104,6 +104,7 @@ async function handleSubmit() {
       <UFormField label="Full name" required>
         <UInput
           v-model="name"
+          data-testid="register-name-input"
           type="text"
           placeholder="John Doe"
           icon="i-lucide-user"
@@ -115,6 +116,7 @@ async function handleSubmit() {
       <UFormField label="Email address" required>
         <UInput
           v-model="email"
+          data-testid="register-email-input"
           type="email"
           placeholder="you@example.com"
           icon="i-lucide-mail"
@@ -126,6 +128,7 @@ async function handleSubmit() {
       <UFormField label="Password" required>
         <UInput
           v-model="password"
+          data-testid="register-password-input"
           type="password"
           placeholder="Create a strong password"
           icon="i-lucide-lock"
@@ -142,7 +145,7 @@ async function handleSubmit() {
               :class="i <= passwordStrength.score ? passwordStrength.color : 'bg-gray-200 dark:bg-gray-700'"
             />
           </div>
-          <p class="text-xs text-gray-500 dark:text-gray-400">
+          <p data-testid="register-password-strength" class="text-xs text-gray-500 dark:text-gray-400">
             Password strength: <span class="font-medium">{{ passwordStrength.label }}</span>
           </p>
         </div>
@@ -155,6 +158,7 @@ async function handleSubmit() {
       >
         <UInput
           v-model="confirmPassword"
+          data-testid="register-confirm-password-input"
           type="password"
           placeholder="Confirm your password"
           icon="i-lucide-lock"
@@ -165,6 +169,7 @@ async function handleSubmit() {
 
       <UButton
         type="submit"
+        data-testid="register-submit-button"
         block
         :loading="loading"
         size="lg"
@@ -190,6 +195,7 @@ async function handleSubmit() {
       <UButton
         variant="outline"
         color="neutral"
+        data-testid="register-oauth-google"
         block
         icon="i-lucide-chrome"
       >
@@ -198,6 +204,7 @@ async function handleSubmit() {
       <UButton
         variant="outline"
         color="neutral"
+        data-testid="register-oauth-facebook"
         block
         icon="i-lucide-facebook"
       >
@@ -211,6 +218,7 @@ async function handleSubmit() {
       {{ ' ' }}
       <NuxtLink
         to="/auth/login"
+        data-testid="register-signin-link"
         class="text-indigo-600 dark:text-indigo-400 font-medium hover:underline"
       >
         Sign in

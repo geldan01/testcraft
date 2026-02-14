@@ -194,7 +194,7 @@ function getRoleBadgeColor(role: string): string {
               <UInput v-model.number="orgMaxTestCases" type="number" :min="1" :max="10000" class="w-full" />
             </UFormField>
             <div class="flex justify-end">
-              <UButton type="submit" :loading="savingOrg">
+              <UButton type="submit" :loading="savingOrg" data-testid="settings-save-button">
                 Save Changes
               </UButton>
             </div>
@@ -213,7 +213,7 @@ function getRoleBadgeColor(role: string): string {
                 This will permanently delete the organization, all projects, and all data.
               </p>
             </div>
-            <UButton color="error" variant="outline" size="sm">
+            <UButton color="error" variant="outline" size="sm" data-testid="settings-delete-org-button">
               Delete
             </UButton>
           </div>
@@ -226,7 +226,7 @@ function getRoleBadgeColor(role: string): string {
           <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
             Members ({{ members.length }})
           </h2>
-          <UButton icon="i-lucide-user-plus" size="sm" @click="showInviteModal = true">
+          <UButton icon="i-lucide-user-plus" size="sm" data-testid="settings-invite-member-button" @click="showInviteModal = true">
             Invite Member
           </UButton>
         </div>
@@ -245,7 +245,7 @@ function getRoleBadgeColor(role: string): string {
                   size="sm"
                 />
                 <div>
-                  <p class="text-sm font-medium text-gray-900 dark:text-white">
+                  <p class="text-sm font-medium text-gray-900 dark:text-white" data-testid="settings-member-name">
                     {{ member.user?.name ?? 'Unknown' }}
                   </p>
                   <p class="text-xs text-gray-500 dark:text-gray-400">
@@ -268,6 +268,7 @@ function getRoleBadgeColor(role: string): string {
                   color="error"
                   size="xs"
                   aria-label="Remove member"
+                  data-testid="settings-remove-member-button"
                   @click="handleRemoveMember(member.id)"
                 />
               </div>
@@ -292,7 +293,7 @@ function getRoleBadgeColor(role: string): string {
         <UCard>
           <div v-if="permissions.length === 0" class="text-center py-8">
             <UIcon name="i-lucide-shield" class="text-3xl text-gray-400 dark:text-gray-400 mb-2" />
-            <p class="text-sm text-gray-500 dark:text-gray-400">
+            <p class="text-sm text-gray-500 dark:text-gray-400" data-testid="settings-no-rbac-message">
               No custom RBAC permissions configured. Default permissions apply.
             </p>
           </div>
@@ -352,6 +353,7 @@ function getRoleBadgeColor(role: string): string {
               placeholder="colleague@example.com"
               autofocus
               class="w-full"
+              data-testid="settings-invite-email-input"
             />
           </UFormField>
           <UFormField label="Role" required>

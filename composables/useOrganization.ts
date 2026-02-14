@@ -60,7 +60,7 @@ export const useOrganization = () => {
 
   async function deleteOrganization(orgId: string): Promise<boolean> {
     try {
-      await $fetch(`/api/organizations/${orgId}`, { method: 'DELETE' })
+      await $fetch(`/api/organizations/${orgId}`, { method: 'DELETE' as 'GET' })
       await orgStore.fetchOrganizations()
       return true
     } catch {

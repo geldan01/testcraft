@@ -1,6 +1,7 @@
 import { requireAuth } from '~/server/utils/auth'
 import { prisma } from '~/server/utils/db'
 import { logActivity } from '~/server/utils/activity'
+import { updateTestCaseLastRun } from '~/server/utils/testRunHelper'
 
 export default defineEventHandler(async (event) => {
   const user = await requireAuth(event)
@@ -37,9 +38,14 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 403, statusMessage: 'You do not have access to this test run' })
   }
 
+  const testCaseId = testRun.testCaseId
+
   await prisma.testRun.delete({
     where: { id: runId },
   })
+
+  // Recalculate test case lastRunStatus (reverts to previous run if latest was deleted)
+  await updateTestCaseLastRun(testCaseId)
 
   await logActivity(user.id, 'DELETED', 'TestRun', runId, {
     testCaseId: testRun.testCaseId,

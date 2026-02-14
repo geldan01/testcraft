@@ -127,7 +127,7 @@ test.describe('Organizations - List Page', () => {
     await orgsPage.goto()
 
     // Org cards are NuxtLinks
-    const acmeLink = orgsPage.orgCard('Acme Corp')
+    const acmeLink = orgsPage.orgCard('org-1')
     await expect(acmeLink).toHaveAttribute('href', '/organizations/org-1')
   })
 
@@ -208,7 +208,7 @@ test.describe('Organizations - Detail Page', () => {
     await expect(page.getByRole('heading', { name: 'Projects' })).toBeVisible()
 
     // Project card
-    await expect(orgDetail.projectCard('Web App')).toBeVisible()
+    await expect(orgDetail.projectCard('project-1')).toBeVisible()
     await expect(page.getByText('Main web application')).toBeVisible()
     await expect(page.getByText('15 cases')).toBeVisible()
   })
@@ -225,9 +225,9 @@ test.describe('Organizations - Detail Page', () => {
     // Click Members tab
     await orgDetail.membersTab.click()
 
-    // Member names should be visible
-    await expect(orgDetail.memberName('Test User')).toBeVisible()
-    await expect(orgDetail.memberName('Jane Smith')).toBeVisible()
+    // Member rows should be visible
+    await expect(orgDetail.memberRow('member-1')).toBeVisible()
+    await expect(orgDetail.memberRow('member-2')).toBeVisible()
 
     // Roles should be displayed as badges
     await expect(page.getByText('Organization Manager')).toBeVisible()

@@ -88,6 +88,7 @@ const showPreview = ref(false)
         size="xs"
         variant="ghost"
         color="neutral"
+        data-testid="test-case-create-preview-button"
         @click="showPreview = !showPreview"
       >
         {{ showPreview ? 'Edit' : 'Preview' }}
@@ -101,6 +102,7 @@ const showPreview = ref(false)
       :placeholder="placeholder"
       :rows="12"
       class="font-mono text-sm w-full"
+      data-testid="test-case-create-gherkin-textarea"
     />
 
     <!-- Preview with syntax highlighting -->

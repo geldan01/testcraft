@@ -13,22 +13,22 @@ export class DashboardPage {
   get main(): Locator { return this.page.getByRole('main') }
 
   get welcomeHeading(): Locator { return this.page.getByRole('heading', { name: /Welcome back/ }) }
-  orgName(name: string): Locator { return this.main.getByText(name) }
+  get orgName(): Locator { return this.page.getByTestId('dashboard-org-name') }
 
-  get totalTestCasesLabel(): Locator { return this.page.getByText('Total Test Cases') }
-  get passRateLabel(): Locator { return this.page.getByText('Pass Rate') }
-  get recentRunsLabel(): Locator { return this.page.getByText('Recent Runs') }
-  get debugFlaggedLabel(): Locator { return this.page.getByText('Debug Flagged') }
+  get totalTestCasesLabel(): Locator { return this.page.getByTestId('dashboard-stat-total-test-cases') }
+  get passRateLabel(): Locator { return this.page.getByTestId('dashboard-stat-pass-rate') }
+  get recentRunsLabel(): Locator { return this.page.getByTestId('dashboard-stat-recent-runs') }
+  get debugFlaggedLabel(): Locator { return this.page.getByTestId('dashboard-stat-debug-flagged') }
 
-  get recentActivitySection(): Locator { return this.page.getByText('Recent Activity') }
-  get viewAllLink(): Locator { return this.page.getByText('View all') }
-  get noRecentActivity(): Locator { return this.page.getByText('No recent activity') }
+  get recentActivitySection(): Locator { return this.page.getByTestId('dashboard-recent-activity') }
+  get viewAllLink(): Locator { return this.page.getByTestId('dashboard-view-all-activity') }
+  get noRecentActivity(): Locator { return this.page.getByTestId('dashboard-no-recent-activity') }
 
-  get newTestCaseButton(): Locator { return this.page.getByRole('button', { name: 'New Test Case' }) }
-  get newTestPlanButton(): Locator { return this.page.getByRole('button', { name: 'New Test Plan' }) }
-  get viewReportsButton(): Locator { return this.page.getByRole('button', { name: 'View Reports' }) }
+  get newTestCaseButton(): Locator { return this.page.getByTestId('dashboard-new-test-case-btn') }
+  get newTestPlanButton(): Locator { return this.page.getByTestId('dashboard-new-test-plan-btn') }
+  get viewReportsButton(): Locator { return this.page.getByTestId('dashboard-view-reports-btn') }
 
-  get quickLinksSection(): Locator { return this.page.getByText('Quick Links') }
-  get manageOrgsLink(): Locator { return this.page.getByText('Manage your organizations') }
-  get rbacSettingsLink(): Locator { return this.page.getByText('Organization & RBAC settings') }
+  get quickLinksSection(): Locator { return this.page.getByTestId('dashboard-quick-links') }
+  get manageOrgsLink(): Locator { return this.page.getByTestId('dashboard-manage-orgs-link') }
+  get rbacSettingsLink(): Locator { return this.page.getByTestId('dashboard-rbac-settings-link') }
 }

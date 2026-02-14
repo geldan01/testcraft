@@ -6,28 +6,28 @@ export class TestCaseCreatePage {
   async goto(projectId: string) { await this.page.goto(`/projects/${projectId}/test-cases/new`) }
 
   get heading(): Locator { return this.page.getByRole('heading', { name: 'Create Test Case' }) }
-  get subtitle(): Locator { return this.page.getByText('Define a new test case with steps or Gherkin syntax.') }
-  get nameInput(): Locator { return this.page.getByPlaceholder('e.g., Verify user login with valid credentials') }
-  get descriptionInput(): Locator { return this.page.getByPlaceholder('Describe what this test case validates...') }
+  get subtitle(): Locator { return this.page.getByTestId('test-case-create-subtitle') }
+  get nameInput(): Locator { return this.page.getByTestId('test-case-create-name-input') }
+  get descriptionInput(): Locator { return this.page.getByTestId('test-case-create-description-input') }
 
-  get stepBasedButton(): Locator { return this.page.getByRole('button', { name: 'Step-Based' }) }
-  get gherkinButton(): Locator { return this.page.getByRole('button', { name: 'Gherkin (BDD)' }) }
+  get stepBasedButton(): Locator { return this.page.getByTestId('test-case-create-step-based-button') }
+  get gherkinButton(): Locator { return this.page.getByTestId('test-case-create-gherkin-button') }
 
   get preconditionsHeading(): Locator { return this.page.getByRole('heading', { name: 'Preconditions' }) }
-  get preconditionInput(): Locator { return this.page.getByPlaceholder('Add a precondition...') }
-  get addPreconditionButton(): Locator { return this.page.getByRole('button', { name: 'Add', exact: true }) }
+  get preconditionInput(): Locator { return this.page.getByTestId('test-case-create-precondition-input') }
+  get addPreconditionButton(): Locator { return this.page.getByTestId('test-case-create-add-precondition-button') }
 
   get testStepsHeading(): Locator { return this.page.getByRole('heading', { name: 'Test Steps' }) }
-  get addStepButton(): Locator { return this.page.getByRole('button', { name: 'Add Step' }) }
-  get noStepsMessage(): Locator { return this.page.getByText('No test steps yet.') }
-  get stepActionInput(): Locator { return this.page.getByPlaceholder('Describe the action to perform...') }
-  get stepDataInput(): Locator { return this.page.getByPlaceholder('Input data for this step (optional)') }
-  get stepExpectedInput(): Locator { return this.page.getByPlaceholder('What should happen after this step...') }
+  get addStepButton(): Locator { return this.page.getByTestId('test-case-create-add-step-button') }
+  get noStepsMessage(): Locator { return this.page.getByTestId('test-case-create-no-steps-message') }
+  get stepActionInput(): Locator { return this.page.getByTestId('test-case-create-step-action-input') }
+  get stepDataInput(): Locator { return this.page.getByTestId('test-case-create-step-data-input') }
+  get stepExpectedInput(): Locator { return this.page.getByTestId('test-case-create-step-expected-input') }
 
   get gherkinSyntaxHeading(): Locator { return this.page.getByRole('heading', { name: 'Gherkin Syntax' }) }
-  get gherkinTextarea(): Locator { return this.page.getByPlaceholder(/Feature: User Login/) }
-  get previewButton(): Locator { return this.page.getByRole('button', { name: 'Preview' }) }
+  get gherkinTextarea(): Locator { return this.page.getByTestId('test-case-create-gherkin-textarea') }
+  get previewButton(): Locator { return this.page.getByTestId('test-case-create-preview-button') }
 
-  get createButton(): Locator { return this.page.getByRole('button', { name: 'Create Test Case' }) }
-  get cancelButtons(): Locator { return this.page.getByRole('button', { name: 'Cancel' }) }
+  get createButton(): Locator { return this.page.getByTestId('test-case-create-submit-button') }
+  get cancelButtons(): Locator { return this.page.getByTestId('test-case-create-cancel-button') }
 }

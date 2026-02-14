@@ -17,6 +17,9 @@ logs
 .fleet
 .idea
 
+# Claude Code
+.settings.json
+
 # Local env files
 .env
 .env.*
@@ -27,3 +30,6 @@ test-results/
 playwright-report/
 
 /generated/prisma
+
+# Uploaded files
+public/uploads/

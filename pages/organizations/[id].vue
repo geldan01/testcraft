@@ -133,6 +133,7 @@ async function handleCreateProject() {
           variant="outline"
           color="neutral"
           size="sm"
+          data-testid="org-detail-settings-button"
         >
           Settings
         </UButton>
@@ -142,6 +143,7 @@ async function handleCreateProject() {
       <UTabs
         :items="tabs"
         :model-value="activeTab"
+        data-testid="org-detail-tabs"
         @update:model-value="activeTab = $event as string"
       />
 
@@ -149,7 +151,7 @@ async function handleCreateProject() {
       <div v-if="activeTab === 'projects'" class="space-y-4">
         <div class="flex items-center justify-between">
           <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Projects</h2>
-          <UButton icon="i-lucide-plus" size="sm" @click="showCreateProject = true">
+          <UButton icon="i-lucide-plus" size="sm" data-testid="org-detail-create-project-button" @click="showCreateProject = true">
             Create Project
           </UButton>
         </div>
@@ -169,6 +171,7 @@ async function handleCreateProject() {
             v-for="project in projects"
             :key="project.id"
             :to="`/projects/${project.id}`"
+            :data-testid="`org-detail-project-card-${project.id}`"
             class="group"
           >
             <UCard class="h-full hover:shadow-md transition-shadow">
@@ -202,7 +205,7 @@ async function handleCreateProject() {
       <div v-if="activeTab === 'members'" class="space-y-4">
         <div class="flex items-center justify-between">
           <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Members</h2>
-          <UButton icon="i-lucide-user-plus" size="sm">
+          <UButton icon="i-lucide-user-plus" size="sm" data-testid="org-detail-invite-member-button">
             Invite Member
           </UButton>
         </div>
@@ -212,6 +215,7 @@ async function handleCreateProject() {
             <div
               v-for="member in members"
               :key="member.id"
+              :data-testid="`org-detail-member-${member.id}`"
               class="flex items-center justify-between py-3 first:pt-0 last:pb-0"
             >
               <div class="flex items-center gap-3">
@@ -306,13 +310,13 @@ async function handleCreateProject() {
     </template>
 
     <!-- Not found -->
-    <div v-else class="text-center py-16">
+    <div v-else data-testid="org-detail-not-found" class="text-center py-16">
       <UIcon name="i-lucide-search-x" class="text-4xl text-gray-400 dark:text-gray-400 mb-3" />
       <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Organization not found</h2>
       <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
         The organization you're looking for doesn't exist or you don't have access.
       </p>
-      <UButton class="mt-4" variant="outline" @click="navigateTo('/organizations')">
+      <UButton class="mt-4" variant="outline" data-testid="org-detail-back-button" @click="navigateTo('/organizations')">
         Back to Organizations
       </UButton>
     </div>
@@ -327,7 +331,7 @@ async function handleCreateProject() {
               <UButton
                 icon="i-lucide-x"
                 variant="ghost"
-                color="white"
+                color="neutral"
                 size="sm"
                 @click="showCreateProject = false"
               />

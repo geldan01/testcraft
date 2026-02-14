@@ -44,7 +44,7 @@ async function handleSubmit() {
       <h2 class="text-xl font-bold text-gray-900 dark:text-white">
         Sign in to your account
       </h2>
-      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+      <p data-testid="login-subtitle" class="mt-1 text-sm text-gray-500 dark:text-gray-400">
         Welcome back! Enter your credentials to continue.
       </p>
     </div>
@@ -64,6 +64,7 @@ async function handleSubmit() {
       <UFormField label="Email address" required>
         <UInput
           v-model="email"
+          data-testid="login-email-input"
           type="email"
           placeholder="you@example.com"
           icon="i-lucide-mail"
@@ -75,6 +76,7 @@ async function handleSubmit() {
       <UFormField label="Password" required>
         <UInput
           v-model="password"
+          data-testid="login-password-input"
           type="password"
           placeholder="Enter your password"
           icon="i-lucide-lock"
@@ -84,9 +86,10 @@ async function handleSubmit() {
       </UFormField>
 
       <div class="flex items-center justify-between">
-        <UCheckbox label="Remember me" />
+        <UCheckbox data-testid="login-remember-checkbox" label="Remember me" />
         <NuxtLink
           to="/auth/forgot-password"
+          data-testid="login-forgot-password-link"
           class="text-sm text-indigo-600 dark:text-indigo-400 hover:underline"
         >
           Forgot password?
@@ -95,6 +98,7 @@ async function handleSubmit() {
 
       <UButton
         type="submit"
+        data-testid="login-submit-button"
         block
         :loading="loading"
         size="lg"
@@ -120,6 +124,7 @@ async function handleSubmit() {
       <UButton
         variant="outline"
         color="neutral"
+        data-testid="login-oauth-google"
         block
         icon="i-lucide-chrome"
       >
@@ -128,6 +133,7 @@ async function handleSubmit() {
       <UButton
         variant="outline"
         color="neutral"
+        data-testid="login-oauth-facebook"
         block
         icon="i-lucide-facebook"
       >
@@ -141,6 +147,7 @@ async function handleSubmit() {
       {{ ' ' }}
       <NuxtLink
         to="/auth/register"
+        data-testid="login-signup-link"
         class="text-indigo-600 dark:text-indigo-400 font-medium hover:underline"
       >
         Sign up

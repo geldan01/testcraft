@@ -67,6 +67,7 @@ function updateStep(index: number, field: keyof TestStep, value: string) {
         icon="i-lucide-plus"
         size="sm"
         variant="soft"
+        data-testid="test-case-create-add-step-button"
         @click="addStep"
       >
         Add Step
@@ -79,7 +80,7 @@ function updateStep(index: number, field: keyof TestStep, value: string) {
       class="border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg p-8 text-center"
     >
       <UIcon name="i-lucide-list-plus" class="text-3xl text-gray-400 dark:text-gray-400 mb-2" />
-      <p class="text-sm text-gray-500 dark:text-gray-400">
+      <p class="text-sm text-gray-500 dark:text-gray-400" data-testid="test-case-create-no-steps-message">
         No test steps yet. Click "Add Step" to get started.
       </p>
     </div>
@@ -108,6 +109,7 @@ function updateStep(index: number, field: keyof TestStep, value: string) {
                 :rows="2"
                 autoresize
                 class="w-full"
+                data-testid="test-case-create-step-action-input"
                 @update:model-value="updateStep(index, 'action', $event)"
               />
             </UFormField>
@@ -117,6 +119,7 @@ function updateStep(index: number, field: keyof TestStep, value: string) {
                 :model-value="step.data"
                 placeholder="Input data for this step (optional)"
                 class="w-full"
+                data-testid="test-case-create-step-data-input"
                 @update:model-value="updateStep(index, 'data', $event)"
               />
             </UFormField>
@@ -128,6 +131,7 @@ function updateStep(index: number, field: keyof TestStep, value: string) {
                 :rows="2"
                 autoresize
                 class="w-full"
+                data-testid="test-case-create-step-expected-input"
                 @update:model-value="updateStep(index, 'expectedResult', $event)"
               />
             </UFormField>

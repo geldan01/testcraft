@@ -75,7 +75,7 @@ test.describe('Comments Section', () => {
     await detail.goto('project-1', 'tc-1')
 
     // Comments heading with count
-    await expect(detail.commentsSection.commentsCount(2)).toBeVisible()
+    await expect(detail.commentsSection.commentsHeading).toContainText('Comments (2)')
   })
 
   test('comment shows author name and timestamp', async ({ page }) => {
@@ -132,7 +132,7 @@ test.describe('Comments Section', () => {
 
     await detail.goto('project-1', 'tc-1')
 
-    await expect(detail.commentsSection.commentsCount(0)).toBeVisible()
+    await expect(detail.commentsSection.commentsHeading).toContainText('Comments (0)')
     await expect(detail.commentsSection.emptyMessage).toBeVisible()
   })
 
@@ -169,6 +169,6 @@ test.describe('Comments Section', () => {
     await expect(detail.commentsSection.commentText('This is a new comment from the test.')).toBeVisible()
 
     // Comment count should update
-    await expect(detail.commentsSection.commentsCount(1)).toBeVisible()
+    await expect(detail.commentsSection.commentsHeading).toContainText('Comments (1)')
   })
 })

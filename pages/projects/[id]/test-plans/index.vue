@@ -71,7 +71,7 @@ const columns = [
           Organize and manage test plans for this project.
         </p>
       </div>
-      <UButton icon="i-lucide-plus" @click="showCreateModal = true">
+      <UButton data-testid="test-plans-create-button" icon="i-lucide-plus" @click="showCreateModal = true">
         Create Test Plan
       </UButton>
     </div>
@@ -84,6 +84,7 @@ const columns = [
     <!-- Empty state -->
     <div
       v-else-if="plans.length === 0"
+      data-testid="test-plans-empty-state"
       class="text-center py-16 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg"
     >
       <UIcon name="i-lucide-clipboard-list" class="text-4xl text-gray-400 dark:text-gray-400 mb-3" />
@@ -118,13 +119,13 @@ const columns = [
               class="border-b border-gray-100 dark:border-gray-800 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer"
               @click="navigateTo(`/projects/${projectId}/test-plans/${plan.id}`)"
             >
-              <td class="py-3 px-4">
+              <td class="py-3 px-4" data-testid="test-plans-plan-name">
                 <p class="font-medium text-gray-900 dark:text-white">{{ plan.name }}</p>
                 <p v-if="plan.description" class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-1">
                   {{ plan.description }}
                 </p>
               </td>
-              <td class="py-3 px-4 text-gray-600 dark:text-gray-400">
+              <td class="py-3 px-4 text-gray-600 dark:text-gray-400" data-testid="test-plans-case-count">
                 {{ plan._count?.testCases ?? 0 }}
               </td>
               <td class="py-3 px-4 text-gray-600 dark:text-gray-400">
@@ -152,12 +153,14 @@ const columns = [
       v-model:open="showCreateModal"
       title="Create Test Plan"
       description="Define a new test plan for this project."
+      data-testid="test-plans-create-modal"
     >
       <template #body>
         <form class="space-y-4" @submit.prevent="handleCreate">
           <UFormField label="Plan name" required>
             <UInput
               v-model="newPlan.name"
+              data-testid="test-plans-create-modal-name-input"
               placeholder="e.g., Sprint 12 Regression"
               autofocus
               class="w-full"
@@ -166,6 +169,7 @@ const columns = [
           <UFormField label="Description">
             <UTextarea
               v-model="newPlan.description"
+              data-testid="test-plans-create-modal-description-input"
               placeholder="Describe the purpose and scope of this test plan..."
               :rows="3"
               class="w-full"
@@ -175,8 +179,8 @@ const columns = [
       </template>
       <template #footer>
         <div class="flex justify-end gap-3">
-          <UButton variant="ghost" color="neutral" @click="showCreateModal = false">Cancel</UButton>
-          <UButton :disabled="!newPlan.name.trim()" @click="handleCreate">Create</UButton>
+          <UButton data-testid="test-plans-create-modal-cancel-button" variant="ghost" color="neutral" @click="showCreateModal = false">Cancel</UButton>
+          <UButton data-testid="test-plans-create-modal-submit-button" :disabled="!newPlan.name.trim()" @click="handleCreate">Create</UButton>
         </div>
       </template>
     </UModal>

@@ -6,9 +6,12 @@ export class TestRunsPage {
   async goto(projectId: string) { await this.page.goto(`/projects/${projectId}/runs`) }
 
   get heading(): Locator { return this.page.getByRole('heading', { name: 'Test Runs History' }) }
-  get dateInputs(): Locator { return this.page.locator('input[type="date"]') }
-  get emptyState(): Locator { return this.page.getByText('No test runs yet') }
+  get dateFromFilter(): Locator { return this.page.getByTestId('test-runs-date-from').locator('input') }
+  get dateToFilter(): Locator { return this.page.getByTestId('test-runs-date-to').locator('input') }
+  get emptyState(): Locator { return this.page.getByTestId('test-runs-empty-state') }
+  get table(): Locator { return this.page.getByTestId('test-runs-table') }
 
-  testCaseLink(name: string): Locator { return this.page.getByRole('link', { name }) }
-  statusBadge(status: string): Locator { return this.page.getByText(status, { exact: true }) }
+  testRunRow(runId: string): Locator { return this.page.getByTestId(`test-run-row-${runId}`) }
+  get testCaseNames(): Locator { return this.page.getByTestId('test-runs-test-case-name') }
+  get statusBadges(): Locator { return this.page.getByTestId('test-runs-status-badge') }
 }

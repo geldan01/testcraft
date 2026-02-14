@@ -353,3 +353,157 @@ export async function mockCreateOrgApi(page: Page, response: object) {
     }
   })
 }
+
+export async function mockStartTestRunApi(page: Page, response: object) {
+  await page.route('**/api/test-runs/start', async (route) => {
+    if (route.request().method() === 'POST') {
+      await route.fulfill({
+        status: 201,
+        contentType: 'application/json',
+        body: JSON.stringify(response),
+      })
+    } else {
+      await route.continue()
+    }
+  })
+}
+
+export async function mockCompleteTestRunApi(page: Page, runId: string, response: object) {
+  await page.route(`**/api/test-runs/${runId}/complete`, async (route) => {
+    if (route.request().method() === 'PUT') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(response),
+      })
+    } else {
+      await route.continue()
+    }
+  })
+}
+
+export async function mockTestRunDetailApi(page: Page, runId: string, run: object) {
+  await page.route(`**/api/test-runs/${runId}`, async (route) => {
+    if (route.request().method() === 'GET') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(run),
+      })
+    } else {
+      await route.continue()
+    }
+  })
+}
+
+export async function mockTestRunNotFoundApi(page: Page, runId: string) {
+  await page.route(`**/api/test-runs/${runId}`, async (route) => {
+    if (route.request().method() === 'GET') {
+      await route.fulfill({
+        status: 404,
+        contentType: 'application/json',
+        body: JSON.stringify({ statusCode: 404, message: 'Test run not found' }),
+      })
+    } else {
+      await route.continue()
+    }
+  })
+}
+
+export async function mockTestRunAttachmentsApi(page: Page, runId: string, attachments: object[]) {
+  await page.route(`**/api/test-runs/${runId}/attachments`, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(attachments),
+    })
+  })
+}
+
+export async function mockUploadAttachmentApi(page: Page, response: object) {
+  await page.route('**/api/attachments/upload*', async (route) => {
+    if (route.request().method() === 'POST') {
+      await route.fulfill({
+        status: 201,
+        contentType: 'application/json',
+        body: JSON.stringify(response),
+      })
+    } else {
+      await route.continue()
+    }
+  })
+}
+
+export async function mockDeleteAttachmentApi(page: Page, attachmentId: string) {
+  await page.route(`**/api/attachments/${attachmentId}`, async (route) => {
+    if (route.request().method() === 'DELETE') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ message: 'Attachment deleted successfully' }),
+      })
+    } else {
+      await route.continue()
+    }
+  })
+}
+
+export async function mockToggleDebugFlagApi(page: Page, caseId: string, response: object) {
+  await page.route(`**/api/test-cases/${caseId}/debug-flag`, async (route) => {
+    if (route.request().method() === 'PUT') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(response),
+      })
+    } else {
+      await route.continue()
+    }
+  })
+}
+
+export async function mockDeleteTestRunApi(page: Page, runId: string) {
+  await page.route(`**/api/test-runs/${runId}`, async (route) => {
+    if (route.request().method() === 'DELETE') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true }),
+      })
+    } else {
+      await route.continue()
+    }
+  })
+}
+
+export async function mockDebugQueueApi(page: Page, projectId: string, testCases: object[]) {
+  await page.route(`**/api/projects/${projectId}/test-cases*`, async (route) => {
+    const url = route.request().url()
+    // Check if this is a debug flag query
+    if (url.includes('debugFlag=true')) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          data: testCases,
+          total: testCases.length,
+          page: 1,
+          limit: 50,
+          totalPages: 1,
+        }),
+      })
+    } else {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          data: testCases,
+          total: testCases.length,
+          page: 1,
+          limit: 20,
+          totalPages: 1,
+        }),
+      })
+    }
+  })
+}

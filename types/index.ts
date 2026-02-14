@@ -392,6 +392,49 @@ export interface InviteMemberInput {
 }
 
 // =============================================================================
+// ATTACHMENT INPUT TYPES
+// =============================================================================
+
+export interface CreateAttachmentInput {
+  file: File
+  testRunId?: string
+  testCaseId?: string
+}
+
+// =============================================================================
+// TEST RUN START/COMPLETE TYPES
+// =============================================================================
+
+export interface StartTestRunInput {
+  testCaseId: string
+  environment: string
+}
+
+export interface CompleteTestRunInput {
+  status: 'PASS' | 'FAIL' | 'BLOCKED' | 'SKIPPED'
+  notes?: string
+  duration?: number
+}
+
+// =============================================================================
+// DEBUG FLAG TYPES
+// =============================================================================
+
+export interface ToggleDebugFlagInput {
+  comment?: string
+}
+
+// =============================================================================
+// ENVIRONMENT TYPES
+// =============================================================================
+
+export interface EnvironmentOption {
+  label: string
+  value: string
+  color?: string
+}
+
+// =============================================================================
 // FILTER TYPES
 // =============================================================================
 

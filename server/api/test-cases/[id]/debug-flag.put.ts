@@ -1,6 +1,11 @@
+import { z } from 'zod'
 import { requireAuth } from '~/server/utils/auth'
 import { prisma } from '~/server/utils/db'
 import { logActivity } from '~/server/utils/activity'
+
+const debugFlagSchema = z.object({
+  comment: z.string().max(2000).optional(),
+})
 
 export default defineEventHandler(async (event) => {
   const user = await requireAuth(event)
@@ -33,6 +38,11 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 403, statusMessage: 'You do not have access to this test case' })
   }
 
+  // Parse optional body
+  const body = await readBody(event).catch(() => ({}))
+  const parsed = debugFlagSchema.safeParse(body || {})
+  const comment = parsed.success ? parsed.data.comment : undefined
+
   // Toggle debug flag
   const newDebugFlag = !testCase.debugFlag
 
@@ -52,6 +62,18 @@ export default defineEventHandler(async (event) => {
       },
     },
   })
+
+  // If toggling ON and a comment is provided, create a debug comment
+  if (newDebugFlag && comment) {
+    await prisma.comment.create({
+      data: {
+        content: `[DEBUG FLAG] ${comment}`,
+        authorId: user.id,
+        commentableType: 'TEST_CASE',
+        commentableId: caseId,
+      },
+    })
+  }
 
   await logActivity(user.id, 'UPDATED', 'TestCase', caseId, {
     debugFlag: newDebugFlag,
