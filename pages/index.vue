@@ -1,17 +1,23 @@
 <script setup lang="ts">
+import { useAuthStore } from '~/stores/auth'
+
 definePageMeta({
-  layout: 'default',
+  layout: false,
 })
 
-useSeoMeta({
-  title: 'TestCraft',
-  description: 'TestCraft application',
-})
+const authStore = useAuthStore()
+
+// Initialize auth from storage
+authStore.initFromStorage()
+
+// Redirect based on auth state
+if (authStore.token) {
+  await navigateTo('/dashboard', { replace: true })
+} else {
+  await navigateTo('/auth/login', { replace: true })
+}
 </script>
 
 <template>
-  <div>
-    <h2 class="text-2xl font-bold text-gray-900">Welcome to TestCraft</h2>
-    <p class="mt-2 text-gray-600">Your application is up and running.</p>
-  </div>
+  <div />
 </template>

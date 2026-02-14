@@ -1,0 +1,424 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+enum AuthProvider {
+  EMAIL
+  GOOGLE
+  FACEBOOK
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  PENDING_INVITATION
+}
+
+enum OrganizationRole {
+  ORGANIZATION_MANAGER
+  PROJECT_MANAGER
+  PRODUCT_OWNER
+  QA_ENGINEER
+  DEVELOPER
+}
+
+enum ObjectType {
+  TEST_SUITE
+  TEST_PLAN
+  TEST_CASE
+  TEST_RUN
+  REPORT
+}
+
+enum RbacAction {
+  READ
+  EDIT
+  DELETE
+}
+
+enum TestType {
+  STEP_BASED
+  GHERKIN
+}
+
+enum TestRunStatus {
+  NOT_RUN
+  IN_PROGRESS
+  PASS
+  FAIL
+  BLOCKED
+  SKIPPED
+}
+
+enum CommentableType {
+  TEST_CASE
+  TEST_RUN
+}
+
+enum ActivityActionType {
+  CREATED
+  UPDATED
+  DELETED
+}
+
+// ============================================================================
+// USER & AUTHENTICATION
+// ============================================================================
+
+model User {
+  id           String       @id @default(cuid())
+  email        String       @unique
+  passwordHash String?
+  name         String
+  avatarUrl    String?
+  authProvider AuthProvider
+  isAdmin      Boolean      @default(false)
+  status       UserStatus   @default(ACTIVE)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  // Relations
+  organizationMemberships OrganizationMember[]
+  projectMemberships      ProjectMember[]
+  testPlansCreated        TestPlan[]
+  testSuitesCreated       TestSuite[]
+  testCasesCreated        TestCase[]
+  testCaseDebugFlags      TestCase[]           @relation("DebugFlaggedBy")
+  testRunsExecuted        TestRun[]
+  attachmentsUploaded     Attachment[]
+  comments                Comment[]
+  activityLogs            ActivityLog[]
+
+  @@index([email])
+  @@index([status])
+}
+
+// ============================================================================
+// ORGANIZATION & MEMBERSHIP
+// ============================================================================
+
+model Organization {
+  id                      String   @id @default(cuid())
+  name                    String
+  maxProjects             Int      @default(10)
+  maxTestCasesPerProject  Int      @default(1000)
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  // Relations
+  members                 OrganizationMember[]
+  rbacPermissions         RbacPermission[]
+  projects                Project[]
+
+  @@index([name])
+}
+
+model OrganizationMember {
+  id             String           @id @default(cuid())
+  organizationId String
+  userId         String
+  role           OrganizationRole
+  joinedAt       DateTime         @default(now())
+
+  // Relations
+  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+  @@index([organizationId])
+  @@index([userId])
+  @@index([role])
+}
+
+// ============================================================================
+// RBAC PERMISSIONS
+// ============================================================================
+
+model RbacPermission {
+  id             String           @id @default(cuid())
+  organizationId String
+  role           OrganizationRole
+  objectType     ObjectType
+  action         RbacAction
+  allowed        Boolean          @default(true)
+
+  // Relations
+  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, role, objectType, action])
+  @@index([organizationId])
+  @@index([role])
+}
+
+// ============================================================================
+// PROJECT
+// ============================================================================
+
+model Project {
+  id             String    @id @default(cuid())
+  name           String
+  description    String?
+  organizationId String
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  // Relations
+  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  members        ProjectMember[]
+  testPlans      TestPlan[]
+  testSuites     TestSuite[]
+  testCases      TestCase[]
+
+  @@index([organizationId])
+  @@index([name])
+}
+
+model ProjectMember {
+  id        String   @id @default(cuid())
+  projectId String
+  userId    String
+
+  // Relations
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@index([projectId])
+  @@index([userId])
+}
+
+// ============================================================================
+// TEST PLAN
+// ============================================================================
+
+model TestPlan {
+  id            String   @id @default(cuid())
+  name          String
+  description   String?
+  projectId     String
+  scope         String?
+  schedule      String?
+  testTypes     String?
+  entryCriteria String?
+  exitCriteria  String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  createdById   String
+
+  // Relations
+  project       Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy     User            @relation(fields: [createdById], references: [id])
+  testCases     TestPlanCase[]
+
+  @@index([projectId])
+  @@index([createdById])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// TEST SUITE
+// ============================================================================
+
+model TestSuite {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  projectId   String
+  suiteType   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById String
+
+  // Relations
+  project     Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy   User            @relation(fields: [createdById], references: [id])
+  testCases   TestSuiteCase[]
+
+  @@index([projectId])
+  @@index([createdById])
+  @@index([suiteType])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// TEST CASE
+// ============================================================================
+
+model TestCase {
+  id                String         @id @default(cuid())
+  name              String
+  description       String?
+  projectId         String
+  preconditions     Json?
+  testType          TestType
+  steps             Json?
+  gherkinSyntax     String?
+  debugFlag         Boolean        @default(false)
+  debugFlaggedAt    DateTime?
+  debugFlaggedById  String?
+  lastRunStatus     TestRunStatus  @default(NOT_RUN)
+  lastRunAt         DateTime?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  createdById       String
+
+  // Relations
+  project           Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy         User             @relation(fields: [createdById], references: [id])
+  debugFlaggedBy    User?            @relation("DebugFlaggedBy", fields: [debugFlaggedById], references: [id])
+  testPlans         TestPlanCase[]
+  testSuites        TestSuiteCase[]
+  testRuns          TestRun[]
+  attachments       Attachment[]
+
+  @@index([projectId])
+  @@index([createdById])
+  @@index([debugFlaggedById])
+  @@index([lastRunStatus])
+  @@index([debugFlag])
+  @@index([testType])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// JOIN TABLES (Many-to-Many)
+// ============================================================================
+
+model TestPlanCase {
+  id         String   @id @default(cuid())
+  testPlanId String
+  testCaseId String
+
+  // Relations
+  testPlan   TestPlan @relation(fields: [testPlanId], references: [id], onDelete: Cascade)
+  testCase   TestCase @relation(fields: [testCaseId], references: [id], onDelete: Cascade)
+
+  @@unique([testPlanId, testCaseId])
+  @@index([testPlanId])
+  @@index([testCaseId])
+}
+
+model TestSuiteCase {
+  id          String    @id @default(cuid())
+  testSuiteId String
+  testCaseId  String
+
+  // Relations
+  testSuite   TestSuite @relation(fields: [testSuiteId], references: [id], onDelete: Cascade)
+  testCase    TestCase  @relation(fields: [testCaseId], references: [id], onDelete: Cascade)
+
+  @@unique([testSuiteId, testCaseId])
+  @@index([testSuiteId])
+  @@index([testCaseId])
+}
+
+// ============================================================================
+// TEST RUN
+// ============================================================================
+
+model TestRun {
+  id          String        @id @default(cuid())
+  testCaseId  String
+  executedById String
+  executedAt  DateTime
+  environment String
+  status      TestRunStatus
+  duration    Int?
+  notes       String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Relations
+  testCase    TestCase      @relation(fields: [testCaseId], references: [id], onDelete: Cascade)
+  executedBy  User          @relation(fields: [executedById], references: [id])
+  attachments Attachment[]
+
+  @@index([testCaseId])
+  @@index([executedById])
+  @@index([executedAt])
+  @@index([status])
+  @@index([environment])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// ATTACHMENT
+// ============================================================================
+
+model Attachment {
+  id           String   @id @default(cuid())
+  fileUrl      String
+  fileName     String
+  fileType     String
+  fileSize     Int
+  uploadedById String
+  testRunId    String?
+  testCaseId   String?
+  createdAt    DateTime @default(now())
+
+  // Relations
+  uploadedBy   User     @relation(fields: [uploadedById], references: [id])
+  testRun      TestRun? @relation(fields: [testRunId], references: [id], onDelete: Cascade)
+  testCase     TestCase? @relation(fields: [testCaseId], references: [id], onDelete: Cascade)
+
+  @@index([uploadedById])
+  @@index([testRunId])
+  @@index([testCaseId])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// COMMENT
+// ============================================================================
+
+model Comment {
+  id               String          @id @default(cuid())
+  content          String
+  authorId         String
+  commentableType  CommentableType
+  commentableId    String
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  // Relations
+  author           User            @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([authorId])
+  @@index([commentableType, commentableId])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// ACTIVITY LOG
+// ============================================================================
+
+model ActivityLog {
+  id         String             @id @default(cuid())
+  userId     String
+  actionType ActivityActionType
+  objectType String
+  objectId   String
+  changes    Json?
+  timestamp  DateTime           @default(now())
+
+  // Relations
+  user       User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([objectType, objectId])
+  @@index([timestamp])
+  @@index([actionType])
+}

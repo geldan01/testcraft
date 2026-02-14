@@ -25,3 +25,5 @@ logs
 # Playwright
 test-results/
 playwright-report/
+
+/generated/prisma
