@@ -1,17 +1,13 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from './fixtures'
+
+test.use({ authenticate: false })
 
 test.describe('App', () => {
-  test('loads the home page successfully', async ({ page }) => {
+  test('redirects unauthenticated users to login from home page', async ({ page }) => {
+    await page.context().clearCookies()
     await page.goto('/')
 
-    await expect(page).toHaveTitle('TestCraft')
-
-    await expect(
-      page.getByRole('heading', { name: 'TestCraft', level: 1 })
-    ).toBeVisible()
-
-    await expect(
-      page.getByRole('heading', { name: 'Welcome to TestCraft', level: 2 })
-    ).toBeVisible()
+    // Index page should redirect to login when not authenticated
+    await expect(page).toHaveURL(/\/auth\/login/)
   })
 })

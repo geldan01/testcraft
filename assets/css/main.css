@@ -1,1 +1,40 @@
 @import "tailwindcss";
+@import "@nuxt/ui";
+
+/* Smooth transitions for sidebar */
+.sidebar-transition {
+  transition: width 200ms ease-in-out, margin-left 200ms ease-in-out;
+}
+
+/* Scrollbar styling for sidebar navigation */
+nav::-webkit-scrollbar {
+  width: 4px;
+}
+
+nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+nav::-webkit-scrollbar-thumb {
+  background: theme('colors.gray.300');
+  border-radius: 2px;
+}
+
+.dark nav::-webkit-scrollbar-thumb {
+  background: theme('colors.gray.700');
+}
+
+/* Line clamp utility */
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
