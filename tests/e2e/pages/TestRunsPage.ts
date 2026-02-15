@@ -3,7 +3,7 @@ import type { Page, Locator } from '@playwright/test'
 export class TestRunsPage {
   constructor(public readonly page: Page) {}
 
-  async goto(projectId: string) { await this.page.goto(`/projects/${projectId}/runs`) }
+  async goto(projectId: string) { await this.page.goto(`/projects/${projectId}/runs`, { waitUntil: 'networkidle' }) }
 
   get heading(): Locator { return this.page.getByRole('heading', { name: 'Test Runs History' }) }
   get dateFromFilter(): Locator { return this.page.getByTestId('test-runs-date-from').locator('input') }

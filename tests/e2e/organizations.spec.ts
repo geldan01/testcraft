@@ -1,6 +1,6 @@
 import { test, expect } from './fixtures'
 import { OrganizationsPage, OrganizationDetailPage } from './pages'
-import { MOCK_USER, mockOrgDetailApis } from './helpers'
+import { MOCK_USER, mockOrgDetailApis, clearServerState } from './helpers'
 
 /**
  * E2E tests for organization management.
@@ -89,6 +89,7 @@ test.describe('Organizations - List Page', () => {
 
   test.beforeEach(async ({ page }) => {
     orgsPage = new OrganizationsPage(page)
+    await clearServerState(page)
     await mockOrganizationsList(page, MOCK_ORGS)
   })
 
@@ -163,6 +164,7 @@ test.describe('Organizations - List Page', () => {
 test.describe('Organizations - Empty State', () => {
   test('shows empty state when user has no organizations', async ({ page }) => {
     const orgsPage = new OrganizationsPage(page)
+    await clearServerState(page)
     await mockOrganizationsList(page, [])
 
     await orgsPage.goto()
@@ -179,6 +181,7 @@ test.describe('Organizations - Detail Page', () => {
 
   test.beforeEach(async ({ page }) => {
     orgDetail = new OrganizationDetailPage(page)
+    await clearServerState(page)
     await mockOrganizationsList(page, MOCK_ORGS)
     await mockOrgDetailApis(page, 'org-1', {
       org: MOCK_ORGS[0],

@@ -17,6 +17,10 @@ const isImage = computed(() => {
 const isVideo = computed(() => {
   return props.attachment?.fileType.startsWith('video/')
 })
+
+const fileDownloadUrl = computed(() => {
+  return props.attachment ? getAttachmentDownloadUrl(props.attachment.id) : ''
+})
 </script>
 
 <template>
@@ -30,7 +34,7 @@ const isVideo = computed(() => {
         <!-- Image preview -->
         <div v-if="isImage" class="flex justify-center">
           <img
-            :src="attachment.fileUrl"
+            :src="fileDownloadUrl"
             :alt="attachment.fileName"
             class="max-w-full max-h-[60vh] rounded-lg object-contain"
           />
@@ -39,7 +43,7 @@ const isVideo = computed(() => {
         <!-- Video preview -->
         <div v-else-if="isVideo" class="flex justify-center">
           <video
-            :src="attachment.fileUrl"
+            :src="fileDownloadUrl"
             controls
             class="max-w-full max-h-[60vh] rounded-lg"
           >
@@ -67,7 +71,7 @@ const isVideo = computed(() => {
         </UButton>
         <a
           v-if="attachment"
-          :href="attachment.fileUrl"
+          :href="fileDownloadUrl"
           target="_blank"
           rel="noopener noreferrer"
         >

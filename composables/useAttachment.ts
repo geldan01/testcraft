@@ -1,5 +1,9 @@
 import type { Attachment } from '~/types'
 
+export function getAttachmentDownloadUrl(attachmentId: string): string {
+  return `/api/attachments/${attachmentId}/download`
+}
+
 export const useAttachment = () => {
   const toast = useToast()
 

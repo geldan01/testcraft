@@ -8,7 +8,7 @@ export class ReportsPage {
   }
 
   async goto() {
-    await this.page.goto(this.path)
+    await this.page.goto(this.path, { waitUntil: 'networkidle' })
   }
 
   // Page header

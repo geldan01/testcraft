@@ -3,7 +3,7 @@ import type { Page, Locator } from '@playwright/test'
 export class TestCasesPage {
   constructor(public readonly page: Page) {}
 
-  async goto(projectId: string) { await this.page.goto(`/projects/${projectId}/test-cases`) }
+  async goto(projectId: string) { await this.page.goto(`/projects/${projectId}/test-cases`, { waitUntil: 'networkidle' }) }
 
   get heading(): Locator { return this.page.getByRole('heading', { name: 'Test Cases' }) }
   get createButton(): Locator { return this.page.getByTestId('test-cases-create-button') }

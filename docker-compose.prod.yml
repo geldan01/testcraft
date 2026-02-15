@@ -1,0 +1,69 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: testcraft-app
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-testcraft}:${POSTGRES_PASSWORD:-testcraft}@db:5432/${POSTGRES_DB:-testcraft}?schema=public"
+      JWT_SECRET: "${JWT_SECRET}"
+      STORAGE_PROVIDER: "${STORAGE_PROVIDER:-local}"
+      MAX_FILE_SIZE_MB: "${MAX_FILE_SIZE_MB:-50}"
+      UPLOAD_DIR: "/app/data/uploads"
+      S3_BUCKET: "${S3_BUCKET:-}"
+      S3_REGION: "${S3_REGION:-us-east-1}"
+      S3_ENDPOINT: "${S3_ENDPOINT:-}"
+      S3_ACCESS_KEY_ID: "${S3_ACCESS_KEY_ID:-}"
+      S3_SECRET_ACCESS_KEY: "${S3_SECRET_ACCESS_KEY:-}"
+    volumes:
+      - upload-data:/app/data/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  db:
+    image: postgres:16-alpine
+    container_name: testcraft-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: "${POSTGRES_USER:-testcraft}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-testcraft}"
+      POSTGRES_DB: "${POSTGRES_DB:-testcraft}"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-testcraft}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: testcraft-migrate
+    environment:
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-testcraft}:${POSTGRES_PASSWORD:-testcraft}@db:5432/${POSTGRES_DB:-testcraft}?schema=public"
+    depends_on:
+      db:
+        condition: service_healthy
+    command: ["npx", "prisma", "migrate", "deploy"]
+    restart: "no"
+
+volumes:
+  postgres-data:
+    driver: local
+  upload-data:
+    driver: local

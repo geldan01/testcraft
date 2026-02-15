@@ -34,6 +34,13 @@ npm run db:studio              # Visual database browser
 npm run db:reset               # Drop and recreate database (destructive)
 ```
 
+### Docker Production
+```bash
+docker compose -f docker-compose.prod.yml up -d         # Start production stack
+docker compose -f docker-compose.prod.yml up --build -d  # Rebuild and start
+docker compose -f docker-compose.prod.yml logs -f app    # View app logs
+```
+
 ### Build
 ```bash
 npm run build                  # Production build
@@ -108,4 +115,9 @@ See `.env.example`. Key variables:
 - `DATABASE_URL` — PostgreSQL connection string
 - `JWT_SECRET` — JWT signing secret (defaults to dev value in `nuxt.config.ts`)
 - `NUXT_SSR` — Set to `false` to disable SSR (used by e2e tests)
-- `STORAGE_PROVIDER` — File storage backend (default: `local`)
+- `STORAGE_PROVIDER` — File storage backend (`local` or `s3`, default: `local`)
+- `S3_BUCKET` — S3 bucket name (required when STORAGE_PROVIDER=s3)
+- `S3_REGION` — AWS region (default: us-east-1)
+- `S3_ENDPOINT` — Custom endpoint for S3-compatible services (R2, MinIO, etc.)
+- `S3_ACCESS_KEY_ID` — S3 access key
+- `S3_SECRET_ACCESS_KEY` — S3 secret key
