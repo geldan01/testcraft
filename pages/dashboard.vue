@@ -36,6 +36,14 @@ function navigateToNewTestPlan() {
   }
 }
 
+function navigateToReports() {
+  if (firstProjectId.value) {
+    navigateTo(`/projects/${firstProjectId.value}/reports`)
+  } else {
+    navigateTo('/organizations')
+  }
+}
+
 // Fetch dashboard stats from project stats API
 const defaultStats: DashboardStats = { totalTestCases: 0, passRate: 0, recentRuns: 0, debugFlagged: 0 }
 const stats = ref<DashboardStats>({ ...defaultStats })
@@ -151,6 +159,7 @@ const statCards = computed(() => [
           variant="outline"
           color="neutral"
           size="sm"
+          @click="navigateToReports"
         >
           View Reports
         </UButton>

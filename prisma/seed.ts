@@ -350,14 +350,11 @@ async function main() {
       description: 'Verify that a user can successfully log in with valid credentials',
       projectId: project.id,
       testType: TestType.STEP_BASED,
-      preconditions: {
-        items: [
+      preconditions: [
           'User account exists in the system',
           'User is not already logged in',
-        ],
-      },
-      steps: {
-        steps: [
+      ],
+      steps: [
           {
             stepNumber: 1,
             action: 'Navigate to the login page',
@@ -378,8 +375,7 @@ async function main() {
             action: 'Click the Login button',
             expectedResult: 'User is redirected to dashboard with welcome message',
           },
-        ],
-      },
+      ],
       lastRunStatus: TestRunStatus.PASS,
       lastRunAt: new Date('2026-02-10T14:30:00Z'),
       createdById: qaEngineer.id,
@@ -396,15 +392,12 @@ async function main() {
       description: 'Verify that an authorized user can create a new project',
       projectId: project.id,
       testType: TestType.STEP_BASED,
-      preconditions: {
-        items: [
+      preconditions: [
           'User is logged in',
           'User has PROJECT_MANAGER role or higher',
           'Organization has not reached max projects limit',
-        ],
-      },
-      steps: {
-        steps: [
+      ],
+      steps: [
           {
             stepNumber: 1,
             action: 'Navigate to Projects page',
@@ -425,8 +418,7 @@ async function main() {
             action: 'Click Save button',
             expectedResult: 'Project is created and appears in the projects list',
           },
-        ],
-      },
+      ],
       lastRunStatus: TestRunStatus.NOT_RUN,
       createdById: qaEngineer.id,
     },
@@ -524,14 +516,11 @@ Scenario: Missing required fields
       description: 'Verify that only authorized users can delete projects',
       projectId: project.id,
       testType: TestType.STEP_BASED,
-      preconditions: {
-        items: [
+      preconditions: [
           'User is logged in',
           'Test project exists',
-        ],
-      },
-      steps: {
-        steps: [
+      ],
+      steps: [
           {
             stepNumber: 1,
             action: 'Login as DEVELOPER role user',
@@ -557,8 +546,7 @@ Scenario: Missing required fields
             action: 'Navigate to same project settings',
             expectedResult: 'Delete button IS visible for ORGANIZATION_MANAGER',
           },
-        ],
-      },
+      ],
       lastRunStatus: TestRunStatus.BLOCKED,
       lastRunAt: new Date('2026-02-08T16:45:00Z'),
       debugFlag: true,
@@ -673,7 +661,228 @@ Scenario: Missing required fields
   console.log('✓ Test runs created')
 
   // ============================================================================
-  // 11. ACTIVITY LOGS
+  // 11. REPORT SEED DATA — many test cases + runs for rich reports
+  // ============================================================================
+  console.log('Creating report seed data (test cases + test runs)...')
+
+  // Delete previously seeded report runs to make re-seeding idempotent
+  await prisma.testRun.deleteMany({
+    where: {
+      testCase: { projectId: project.id },
+      notes: { startsWith: '[seed]' },
+    },
+  })
+
+  // Additional test cases for report variety
+  const reportTestCases = [
+    { id: 'tc-checkout-flow', name: 'Checkout Flow - Complete Purchase', testType: TestType.STEP_BASED },
+    { id: 'tc-password-reset', name: 'Password Reset via Email', testType: TestType.STEP_BASED },
+    { id: 'tc-profile-update', name: 'Update User Profile', testType: TestType.STEP_BASED },
+    { id: 'tc-file-upload', name: 'File Upload - Image Attachment', testType: TestType.STEP_BASED },
+    { id: 'tc-notification-email', name: 'Email Notification Delivery', testType: TestType.GHERKIN },
+    { id: 'tc-dashboard-load', name: 'Dashboard Performance Load', testType: TestType.STEP_BASED },
+    { id: 'tc-pagination', name: 'List Pagination Controls', testType: TestType.STEP_BASED },
+    { id: 'tc-role-switching', name: 'Organization Role Switching', testType: TestType.STEP_BASED },
+    { id: 'tc-export-csv', name: 'Export Data to CSV', testType: TestType.STEP_BASED },
+    { id: 'tc-webhook-trigger', name: 'Webhook Event Trigger', testType: TestType.GHERKIN },
+    { id: 'tc-search-advanced', name: 'Advanced Search with Filters', testType: TestType.GHERKIN },
+    { id: 'tc-session-timeout', name: 'Session Timeout Handling', testType: TestType.STEP_BASED },
+  ]
+
+  for (const tc of reportTestCases) {
+    await prisma.testCase.upsert({
+      where: { id: tc.id },
+      update: {},
+      create: {
+        id: tc.id,
+        name: tc.name,
+        description: `Seed test case for report data: ${tc.name}`,
+        projectId: project.id,
+        testType: tc.testType,
+        createdById: qaEngineer.id,
+        ...(tc.testType === TestType.GHERKIN
+          ? { gherkinSyntax: `Feature: ${tc.name}\n  Scenario: Basic\n    Given the system is running\n    When the test executes\n    Then it should produce a result` }
+          : {
+              steps: [{ stepNumber: 1, action: 'Execute test', expectedResult: 'Test passes' }],
+              preconditions: ['System is available'],
+            }),
+      },
+    })
+  }
+
+  // Link some to suites for scope filtering
+  await prisma.testSuiteCase.createMany({
+    data: [
+      { testSuiteId: smokeSuite.id, testCaseId: 'tc-checkout-flow' },
+      { testSuiteId: smokeSuite.id, testCaseId: 'tc-dashboard-load' },
+      { testSuiteId: regressionSuite.id, testCaseId: 'tc-checkout-flow' },
+      { testSuiteId: regressionSuite.id, testCaseId: 'tc-password-reset' },
+      { testSuiteId: regressionSuite.id, testCaseId: 'tc-profile-update' },
+      { testSuiteId: regressionSuite.id, testCaseId: 'tc-file-upload' },
+      { testSuiteId: regressionSuite.id, testCaseId: 'tc-notification-email' },
+      { testSuiteId: regressionSuite.id, testCaseId: 'tc-pagination' },
+      { testSuiteId: apiSuite.id, testCaseId: 'tc-webhook-trigger' },
+      { testSuiteId: apiSuite.id, testCaseId: 'tc-export-csv' },
+    ],
+    skipDuplicates: true,
+  })
+
+  // Link some to test plan
+  await prisma.testPlanCase.createMany({
+    data: [
+      { testPlanId: testPlan.id, testCaseId: 'tc-checkout-flow' },
+      { testPlanId: testPlan.id, testCaseId: 'tc-password-reset' },
+      { testPlanId: testPlan.id, testCaseId: 'tc-profile-update' },
+      { testPlanId: testPlan.id, testCaseId: 'tc-dashboard-load' },
+    ],
+    skipDuplicates: true,
+  })
+
+  // Generate test runs over the past 14 days
+  const environments = ['staging', 'qa', 'dev', 'production']
+  const executors = [qaEngineer.id, developer.id, admin.id]
+  const allTestCaseIds = [
+    loginTestCase.id,
+    searchTestCase.id,
+    apiTestCase.id,
+    deleteTestCase.id,
+    createProjectTestCase.id,
+    ...reportTestCases.map(tc => tc.id),
+  ]
+
+  // Define behavior profiles for each test case
+  // passRate: how often it passes, flakyFactor: chance of alternating results
+  const testProfiles: Record<string, { passRate: number; avgDuration: number; debugFlag?: boolean }> = {
+    [loginTestCase.id]:         { passRate: 0.95, avgDuration: 45 },
+    [searchTestCase.id]:        { passRate: 0.40, avgDuration: 120, debugFlag: true },  // flaky
+    [apiTestCase.id]:           { passRate: 0.90, avgDuration: 15 },
+    [deleteTestCase.id]:        { passRate: 0.20, avgDuration: 60, debugFlag: true },   // mostly fails
+    [createProjectTestCase.id]: { passRate: 0.85, avgDuration: 55 },
+    'tc-checkout-flow':         { passRate: 0.55, avgDuration: 90, debugFlag: true },   // flaky
+    'tc-password-reset':        { passRate: 0.88, avgDuration: 35 },
+    'tc-profile-update':        { passRate: 0.92, avgDuration: 25 },
+    'tc-file-upload':           { passRate: 0.60, avgDuration: 200, debugFlag: true },  // flaky
+    'tc-notification-email':    { passRate: 0.30, avgDuration: 180, debugFlag: true },  // mostly fails
+    'tc-dashboard-load':        { passRate: 0.97, avgDuration: 10 },
+    'tc-pagination':            { passRate: 0.93, avgDuration: 20 },
+    'tc-role-switching':        { passRate: 0.50, avgDuration: 40, debugFlag: true },   // flaky
+    'tc-export-csv':            { passRate: 0.75, avgDuration: 65 },
+    'tc-webhook-trigger':       { passRate: 0.35, avgDuration: 150, debugFlag: true },  // mostly fails
+    'tc-search-advanced':       { passRate: 0.65, avgDuration: 80 },
+    'tc-session-timeout':       { passRate: 0.80, avgDuration: 30 },
+  }
+
+  // Flag debug test cases
+  for (const [tcId, profile] of Object.entries(testProfiles)) {
+    if (profile.debugFlag) {
+      await prisma.testCase.update({
+        where: { id: tcId },
+        data: {
+          debugFlag: true,
+          debugFlaggedAt: new Date('2026-02-05T10:00:00Z'),
+          debugFlaggedById: qaEngineer.id,
+        },
+      })
+    }
+  }
+
+  // Seeded pseudo-random for reproducibility
+  let seed = 42
+  function seededRandom() {
+    seed = (seed * 16807 + 0) % 2147483647
+    return seed / 2147483647
+  }
+
+  const testRunsToCreate: Array<{
+    testCaseId: string
+    executedById: string
+    executedAt: Date
+    environment: string
+    status: TestRunStatus
+    duration: number | null
+    notes: string
+  }> = []
+
+  const now = new Date('2026-02-15T12:00:00Z')
+
+  for (let daysAgo = 13; daysAgo >= 0; daysAgo--) {
+    // 2-4 test sessions per day
+    const sessionsPerDay = 2 + Math.floor(seededRandom() * 3)
+
+    for (let session = 0; session < sessionsPerDay; session++) {
+      const hour = 8 + Math.floor(seededRandom() * 10) // 8am-6pm
+      const minute = Math.floor(seededRandom() * 60)
+      const sessionDate = new Date(now)
+      sessionDate.setDate(sessionDate.getDate() - daysAgo)
+      sessionDate.setHours(hour, minute, 0, 0)
+
+      // Each session runs 4-8 test cases
+      const testsInSession = 4 + Math.floor(seededRandom() * 5)
+      const shuffled = [...allTestCaseIds].sort(() => seededRandom() - 0.5)
+      const selectedTests = shuffled.slice(0, testsInSession)
+
+      const env = environments[Math.floor(seededRandom() * environments.length)]
+      const executor = executors[Math.floor(seededRandom() * executors.length)]
+
+      for (const testCaseId of selectedTests) {
+        const profile = testProfiles[testCaseId] || { passRate: 0.8, avgDuration: 50 }
+        const roll = seededRandom()
+
+        let status: TestRunStatus
+        if (roll < profile.passRate) {
+          status = TestRunStatus.PASS
+        } else if (roll < profile.passRate + 0.05) {
+          status = TestRunStatus.BLOCKED
+        } else if (roll < profile.passRate + 0.08) {
+          status = TestRunStatus.SKIPPED
+        } else {
+          status = TestRunStatus.FAIL
+        }
+
+        const durationVariance = 0.7 + seededRandom() * 0.6 // 70%-130% of avg
+        const duration = status === TestRunStatus.BLOCKED ? null : Math.round(profile.avgDuration * durationVariance)
+
+        const runTime = new Date(sessionDate)
+        runTime.setMinutes(runTime.getMinutes() + Math.floor(seededRandom() * 30))
+
+        testRunsToCreate.push({
+          testCaseId,
+          executedById: executor,
+          executedAt: runTime,
+          environment: env,
+          status,
+          duration,
+          notes: `[seed] Auto-generated run in ${env}`,
+        })
+      }
+    }
+  }
+
+  // Batch create all test runs
+  await prisma.testRun.createMany({ data: testRunsToCreate })
+
+  // Update lastRunStatus / lastRunAt on test cases based on most recent run
+  for (const tcId of allTestCaseIds) {
+    const lastRun = await prisma.testRun.findFirst({
+      where: { testCaseId: tcId },
+      orderBy: { executedAt: 'desc' },
+      select: { status: true, executedAt: true },
+    })
+    if (lastRun) {
+      await prisma.testCase.update({
+        where: { id: tcId },
+        data: {
+          lastRunStatus: lastRun.status,
+          lastRunAt: lastRun.executedAt,
+        },
+      })
+    }
+  }
+
+  console.log(`✓ Report seed data created: ${reportTestCases.length} test cases, ${testRunsToCreate.length} test runs`)
+
+  // ============================================================================
+  // 12. ACTIVITY LOGS
   // ============================================================================
   console.log('Creating activity logs...')
 

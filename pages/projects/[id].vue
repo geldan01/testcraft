@@ -33,6 +33,7 @@ const tabs = [
   { label: 'Test Suites', value: 'test-suites', icon: 'i-lucide-folder-tree' },
   { label: 'Test Cases', value: 'test-cases', icon: 'i-lucide-test-tubes' },
   { label: 'Test Runs', value: 'runs', icon: 'i-lucide-history' },
+  { label: 'Reports', value: 'reports', icon: 'i-lucide-bar-chart-3' },
 ]
 
 // Sync active tab with current route
@@ -42,6 +43,7 @@ const activeTab = computed(() => {
   if (path.includes('/test-plans')) return 'test-plans'
   if (path.includes('/test-suites')) return 'test-suites'
   if (path.includes('/test-runs') || path.includes('/runs')) return 'runs'
+  if (path.includes('/reports')) return 'reports'
   return 'overview'
 })
 

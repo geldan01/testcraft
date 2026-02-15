@@ -476,6 +476,70 @@ export async function mockDeleteTestRunApi(page: Page, runId: string) {
   })
 }
 
+// =============================================================================
+// REPORT API MOCKS
+// =============================================================================
+
+export async function mockReportStatusBreakdownApi(page: Page, projectId: string, data: object) {
+  await page.route(`**/api/projects/${projectId}/reports/status-breakdown*`, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(data),
+    })
+  })
+}
+
+export async function mockReportExecutionTrendApi(page: Page, projectId: string, data: object) {
+  await page.route(`**/api/projects/${projectId}/reports/execution-trend*`, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(data),
+    })
+  })
+}
+
+export async function mockReportEnvironmentComparisonApi(page: Page, projectId: string, data: object) {
+  await page.route(`**/api/projects/${projectId}/reports/environment-comparison*`, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(data),
+    })
+  })
+}
+
+export async function mockReportTestAnalysisApi(page: Page, projectId: string, data: object) {
+  await page.route(`**/api/projects/${projectId}/reports/test-analysis*`, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(data),
+    })
+  })
+}
+
+export async function mockAllReportApis(page: Page, projectId: string, opts: {
+  statusBreakdown?: object
+  executionTrend?: object
+  environmentComparison?: object
+  testAnalysis?: object
+}) {
+  if (opts.statusBreakdown) {
+    await mockReportStatusBreakdownApi(page, projectId, opts.statusBreakdown)
+  }
+  if (opts.executionTrend) {
+    await mockReportExecutionTrendApi(page, projectId, opts.executionTrend)
+  }
+  if (opts.environmentComparison) {
+    await mockReportEnvironmentComparisonApi(page, projectId, opts.environmentComparison)
+  }
+  if (opts.testAnalysis) {
+    await mockReportTestAnalysisApi(page, projectId, opts.testAnalysis)
+  }
+}
+
 export async function mockDebugQueueApi(page: Page, projectId: string, testCases: object[]) {
   await page.route(`**/api/projects/${projectId}/test-cases*`, async (route) => {
     const url = route.request().url()

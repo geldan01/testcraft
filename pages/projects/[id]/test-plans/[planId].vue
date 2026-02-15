@@ -176,19 +176,19 @@ async function handleUnlinkCase(caseId: string) {
 
       <!-- Plan details -->
       <div v-if="plan.scope || plan.entryCriteria || plan.exitCriteria" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <UCard v-if="plan.scope" data-testid="test-plan-detail-scope-card" :ui="{ header: 'bg-gray-500/20 dark:bg-gray-500/10' }">
+        <UCard v-if="plan.scope" data-testid="test-plan-detail-scope-card" :ui="{ header: 'bg-gray-500/10 dark:bg-gray-500/5' }">
           <template #header>
             <h3 class="text-sm font-semibold text-black dark:text-white">Scope</h3>
           </template>
           <p class="text-sm text-gray-600 dark:text-gray-400">{{ plan.scope }}</p>
         </UCard>
-        <UCard v-if="plan.entryCriteria" data-testid="test-plan-detail-entry-criteria-card" :ui="{ header: 'bg-gray-500/20 dark:bg-gray-500/10' }">
+        <UCard v-if="plan.entryCriteria" data-testid="test-plan-detail-entry-criteria-card" :ui="{ header: 'bg-gray-500/10 dark:bg-gray-500/5' }">
           <template #header>
             <h3 class="text-sm font-semibold text-black dark:text-white">Entry Criteria</h3>
           </template>
           <p class="text-sm text-gray-600 dark:text-gray-400">{{ plan.entryCriteria }}</p>
         </UCard>
-        <UCard v-if="plan.exitCriteria" data-testid="test-plan-detail-exit-criteria-card" :ui="{ header: 'bg-gray-500/20 dark:bg-gray-500/10' }">
+        <UCard v-if="plan.exitCriteria" data-testid="test-plan-detail-exit-criteria-card" :ui="{ header: 'bg-gray-500/10 dark:bg-gray-500/5' }">
           <template #header>
             <h3 class="text-sm font-semibold text-black dark:text-white">Exit Criteria</h3>
           </template>

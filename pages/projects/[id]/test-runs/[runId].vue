@@ -267,7 +267,7 @@ function formatRelativeTime(dateStr: string): string {
       </div>
 
       <!-- Card 1: Run Info -->
-      <UCard :ui="{ header: 'bg-gray-500/20 dark:bg-gray-500/10' }">
+      <UCard :ui="{ header: 'bg-gray-500/10 dark:bg-gray-500/5' }">
         <template #header>
           <h3 data-testid="test-run-detail-info-heading" class="text-sm font-semibold text-black dark:text-white">Run Information</h3>
         </template>
@@ -331,7 +331,7 @@ function formatRelativeTime(dateStr: string): string {
       </UCard>
 
       <!-- Card 2: Test Case Info -->
-      <UCard v-if="run.testCase" :ui="{ header: 'bg-gray-500/20 dark:bg-gray-500/10' }">
+      <UCard v-if="run.testCase" :ui="{ header: 'bg-gray-500/10 dark:bg-gray-500/5' }">
         <template #header>
           <div class="flex items-center justify-between">
             <h3 data-testid="test-run-detail-test-case-heading" class="text-sm font-semibold text-black dark:text-white">Test Case</h3>
@@ -405,7 +405,7 @@ function formatRelativeTime(dateStr: string): string {
       </UCard>
 
       <!-- Card 3: Attachments -->
-      <UCard :ui="{ header: 'bg-gray-500/20 dark:bg-gray-500/10' }">
+      <UCard :ui="{ header: 'bg-gray-500/10 dark:bg-gray-500/5' }">
         <template #header>
           <h3 data-testid="test-run-detail-attachments-heading" class="text-sm font-semibold text-black dark:text-white">Attachments</h3>
         </template>
@@ -424,7 +424,7 @@ function formatRelativeTime(dateStr: string): string {
       </UCard>
 
       <!-- Card 4: Comments placeholder -->
-      <UCard :ui="{ header: 'bg-gray-500/20 dark:bg-gray-500/10' }">
+      <UCard :ui="{ header: 'bg-gray-500/10 dark:bg-gray-500/5' }">
         <template #header>
           <h3 data-testid="test-run-detail-comments-heading" class="text-sm font-semibold text-black dark:text-white">Comments</h3>
         </template>
