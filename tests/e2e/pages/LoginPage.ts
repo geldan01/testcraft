@@ -12,7 +12,6 @@ export class LoginPage {
   get passwordInput(): Locator { return this.page.getByTestId('login-password-input') }
   get signInButton(): Locator { return this.page.getByTestId('login-submit-button') }
   get rememberMeCheckbox(): Locator { return this.page.getByTestId('login-remember-checkbox') }
-  get forgotPasswordLink(): Locator { return this.page.getByTestId('login-forgot-password-link') }
   get googleOAuthButton(): Locator { return this.page.getByTestId('login-oauth-google') }
   get facebookOAuthButton(): Locator { return this.page.getByTestId('login-oauth-facebook') }
   get signUpLink(): Locator { return this.page.getByTestId('login-signup-link') }

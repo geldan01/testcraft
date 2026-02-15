@@ -12,8 +12,8 @@ export const useAuth = () => {
   const userName = computed(() => authStore.userName)
   const userInitials = computed(() => authStore.userInitials)
 
-  async function login(credentials: LoginRequest): Promise<void> {
-    await authStore.login(credentials)
+  async function login(credentials: LoginRequest, rememberMe = true): Promise<void> {
+    await authStore.login(credentials, rememberMe)
     await orgStore.fetchOrganizations()
     orgStore.restoreCurrentOrg()
     await router.push('/dashboard')

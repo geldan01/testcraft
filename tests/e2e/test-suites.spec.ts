@@ -197,8 +197,8 @@ test.describe('Test Suites - Detail Page', () => {
     await expect(suiteDetail.linkedCaseName('Login with valid credentials')).toBeVisible()
     await expect(suiteDetail.linkedCaseName('Login with invalid password')).toBeVisible()
 
-    // Debug badge for flagged case
-    await expect(page.getByText('Debug')).toBeVisible()
+    // Debug badge for flagged case (use exact match to avoid matching sidebar "Debug Queue" link)
+    await expect(page.getByText('Debug', { exact: true })).toBeVisible()
   })
 
   test('unlink button exists for each linked case', async ({ page }) => {

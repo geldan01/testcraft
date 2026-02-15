@@ -40,11 +40,19 @@ export default defineEventHandler(async (event) => {
   // Build where clause with filters
   const where: Prisma.TestCaseWhereInput = { projectId }
 
+  const validStatuses = ['NOT_RUN', 'IN_PROGRESS', 'PASS', 'FAIL', 'BLOCKED', 'SKIPPED']
   if (query.status && typeof query.status === 'string') {
+    if (!validStatuses.includes(query.status)) {
+      throw createError({ statusCode: 400, statusMessage: `Invalid status filter. Must be one of: ${validStatuses.join(', ')}` })
+    }
     where.lastRunStatus = query.status as Prisma.EnumTestRunStatusFilter['equals']
   }
 
+  const validTestTypes = ['STEP_BASED', 'GHERKIN']
   if (query.testType && typeof query.testType === 'string') {
+    if (!validTestTypes.includes(query.testType)) {
+      throw createError({ statusCode: 400, statusMessage: `Invalid testType filter. Must be one of: ${validTestTypes.join(', ')}` })
+    }
     where.testType = query.testType as Prisma.EnumTestTypeFilter['equals']
   }
 

@@ -141,7 +141,7 @@ test.describe('Test Run Detail - Page Layout', () => {
     await runDetail.goto('project-1', 'run-1')
 
     await expect(runDetail.heading).toBeVisible()
-    await expect(page.getByText('Pass', { exact: true })).toBeVisible()
+    await expect(page.getByText('Pass', { exact: true }).first()).toBeVisible()
   })
 
   test('displays the "Back to Runs" button', async ({ page }) => {
@@ -209,7 +209,7 @@ test.describe('Test Run Detail - Run Information Card', () => {
     const runDetail = new TestRunDetailPage(page)
     await runDetail.goto('project-1', 'run-1')
 
-    await expect(page.getByText('staging')).toBeVisible()
+    await expect(runDetail.environmentField.getByText('Staging')).toBeVisible()
   })
 
   test('displays formatted duration', async ({ page }) => {

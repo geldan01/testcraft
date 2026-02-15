@@ -1,6 +1,8 @@
 import type { Attachment } from '~/types'
 
 export const useAttachment = () => {
+  const toast = useToast()
+
   async function uploadAttachment(
     file: File,
     testRunId?: string,
@@ -21,7 +23,9 @@ export const useAttachment = () => {
         method: 'POST',
         body: formData,
       })
-    } catch {
+    } catch (err: unknown) {
+      const message = (err as { data?: { message?: string } })?.data?.message ?? 'Failed to upload attachment'
+      toast.add({ title: message, color: 'error' })
       return null
     }
   }
@@ -30,7 +34,9 @@ export const useAttachment = () => {
     try {
       await $fetch(`/api/attachments/${id}`, { method: 'DELETE' })
       return true
-    } catch {
+    } catch (err: unknown) {
+      const message = (err as { data?: { message?: string } })?.data?.message ?? 'Failed to delete attachment'
+      toast.add({ title: message, color: 'error' })
       return false
     }
   }

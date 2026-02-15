@@ -4,7 +4,9 @@ export class RunExecutorModal {
   constructor(public readonly page: Page) {}
 
   // --- Container & header ---
-  get container(): Locator { return this.page.getByTestId('run-executor-modal') }
+  // UModal teleports content to body, so data-testid on <UModal> doesn't wrap visible content.
+  // Use role="dialog" to find the actual teleported dialog container.
+  get container(): Locator { return this.page.getByRole('dialog') }
   get modalTitle(): Locator { return this.container.getByRole('heading', { name: 'Execute Test Run' }) }
   heading(caseName: string): Locator { return this.container.getByRole('heading', { name: caseName }) }
 

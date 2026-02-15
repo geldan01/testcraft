@@ -140,13 +140,14 @@ async function setupTestCasePage(
 
 /**
  * Sets up mocks for the test run detail page.
- * Mocks: project API, test run detail, attachments, comments, and auth/me.
+ * Mocks: project API, test run detail, attachments, and comments.
+ * Does NOT mock auth/me — lets the real auth flow through so isOwner checks work
+ * correctly with getRealUser().
  */
 async function setupTestRunDetailPage(page: Page, run: object, runId: string) {
   await mockProjectApi(page, 'project-1', MOCK_PROJECT)
   await mockTestRunDetailApi(page, runId, run)
   await mockTestRunAttachmentsApi(page, runId, [])
-  await mockAuthMeApi(page)
 
   // Mock comments endpoint for the run detail page
   await page.route(`**/api/test-runs/${runId}/comments`, async (route) => {

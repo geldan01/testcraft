@@ -139,8 +139,7 @@ test.describe('Test Execution Flow - Two-Phase (Start Run -> Complete Run)', () 
     await detail.runTestButton.click()
 
     // Select environment
-    await detail.runExecutorModal.environmentSelect.click()
-    await detail.runExecutorModal.environmentOption('Staging').click()
+    await detail.runExecutorModal.environmentSelect.selectOption('staging')
 
     // Start Run should now be enabled
     const startButton = page.getByRole('button', { name: 'Start Run' })
@@ -157,8 +156,7 @@ test.describe('Test Execution Flow - Two-Phase (Start Run -> Complete Run)', () 
     await detail.runTestButton.click()
 
     // Select environment
-    await detail.runExecutorModal.environmentSelect.click()
-    await detail.runExecutorModal.environmentOption('Staging').click()
+    await detail.runExecutorModal.environmentSelect.selectOption('staging')
 
     // Click Start Run
     const startButton = page.getByRole('button', { name: 'Start Run' })
@@ -182,8 +180,7 @@ test.describe('Test Execution Flow - Two-Phase (Start Run -> Complete Run)', () 
     await detail.runTestButton.click()
 
     // Select environment and start
-    await detail.runExecutorModal.environmentSelect.click()
-    await detail.runExecutorModal.environmentOption('Staging').click()
+    await detail.runExecutorModal.environmentSelect.selectOption('staging')
     await page.getByRole('button', { name: 'Start Run' }).click()
 
     // Timer should show a time value (00:00 format initially)
@@ -202,14 +199,11 @@ test.describe('Test Execution Flow - Two-Phase (Start Run -> Complete Run)', () 
     await detail.runTestButton.click()
 
     // Select environment and start
-    await detail.runExecutorModal.environmentSelect.click()
-    await detail.runExecutorModal.environmentOption('Staging').click()
+    await detail.runExecutorModal.environmentSelect.selectOption('staging')
     await page.getByRole('button', { name: 'Start Run' }).click()
 
     // After starting, the environment select should be disabled
-    // The USelect component renders as a button with aria-disabled
-    const envSelect = page.locator('[role="dialog"]').getByText('Staging')
-    await expect(envSelect).toBeVisible()
+    await expect(detail.runExecutorModal.environmentSelect).toBeDisabled()
   })
 
   test('result status dropdown appears after starting a run', async ({ page }) => {
@@ -225,8 +219,7 @@ test.describe('Test Execution Flow - Two-Phase (Start Run -> Complete Run)', () 
     await expect(page.getByText('Result Status')).not.toBeVisible()
 
     // Select environment and start
-    await detail.runExecutorModal.environmentSelect.click()
-    await detail.runExecutorModal.environmentOption('Staging').click()
+    await detail.runExecutorModal.environmentSelect.selectOption('staging')
     await page.getByRole('button', { name: 'Start Run' }).click()
 
     // After starting, "Result Status" label should be visible
@@ -243,8 +236,7 @@ test.describe('Test Execution Flow - Two-Phase (Start Run -> Complete Run)', () 
     await detail.runTestButton.click()
 
     // Select environment and start
-    await detail.runExecutorModal.environmentSelect.click()
-    await detail.runExecutorModal.environmentOption('Staging').click()
+    await detail.runExecutorModal.environmentSelect.selectOption('staging')
     await page.getByRole('button', { name: 'Start Run' }).click()
 
     // Complete Run should be disabled (no status selected yet, default is NOT_RUN)
@@ -262,13 +254,11 @@ test.describe('Test Execution Flow - Two-Phase (Start Run -> Complete Run)', () 
     await detail.runTestButton.click()
 
     // Select environment and start
-    await detail.runExecutorModal.environmentSelect.click()
-    await detail.runExecutorModal.environmentOption('Staging').click()
+    await detail.runExecutorModal.environmentSelect.selectOption('staging')
     await page.getByRole('button', { name: 'Start Run' }).click()
 
     // Select result status
-    await page.getByText('Select result...').click()
-    await page.getByRole('option', { name: 'Pass' }).click()
+    await detail.runExecutorModal.statusSelect.selectOption('PASS')
 
     // Complete Run should now be enabled
     const completeButton = page.getByRole('button', { name: 'Complete Run' })
@@ -286,13 +276,11 @@ test.describe('Test Execution Flow - Two-Phase (Start Run -> Complete Run)', () 
     await detail.runTestButton.click()
 
     // Select environment and start
-    await detail.runExecutorModal.environmentSelect.click()
-    await detail.runExecutorModal.environmentOption('Staging').click()
+    await detail.runExecutorModal.environmentSelect.selectOption('staging')
     await page.getByRole('button', { name: 'Start Run' }).click()
 
     // Select result status
-    await page.getByText('Select result...').click()
-    await page.getByRole('option', { name: 'Pass' }).click()
+    await detail.runExecutorModal.statusSelect.selectOption('PASS')
 
     // Click Complete Run
     await page.getByRole('button', { name: 'Complete Run' }).click()
@@ -314,13 +302,11 @@ test.describe('Test Execution Flow - Two-Phase (Start Run -> Complete Run)', () 
     await detail.runTestButton.click()
 
     // Select environment and start
-    await detail.runExecutorModal.environmentSelect.click()
-    await detail.runExecutorModal.environmentOption('Staging').click()
+    await detail.runExecutorModal.environmentSelect.selectOption('staging')
     await page.getByRole('button', { name: 'Start Run' }).click()
 
     // Select FAIL status
-    await page.getByText('Select result...').click()
-    await page.getByRole('option', { name: 'Fail' }).click()
+    await detail.runExecutorModal.statusSelect.selectOption('FAIL')
 
     // Add notes about the failure
     await detail.runExecutorModal.notesField.fill('Step 3 failed')
@@ -346,13 +332,11 @@ test.describe('Test Execution Flow - Two-Phase (Start Run -> Complete Run)', () 
     await detail.runTestButton.click()
 
     // Select environment and start
-    await detail.runExecutorModal.environmentSelect.click()
-    await detail.runExecutorModal.environmentOption('Production').click()
+    await detail.runExecutorModal.environmentSelect.selectOption('production')
     await page.getByRole('button', { name: 'Start Run' }).click()
 
     // Select BLOCKED status
-    await page.getByText('Select result...').click()
-    await page.getByRole('option', { name: 'Blocked' }).click()
+    await detail.runExecutorModal.statusSelect.selectOption('BLOCKED')
 
     // Complete the run
     await page.getByRole('button', { name: 'Complete Run' }).click()
@@ -373,13 +357,11 @@ test.describe('Test Execution Flow - Two-Phase (Start Run -> Complete Run)', () 
     await detail.runTestButton.click()
 
     // Select environment and start
-    await detail.runExecutorModal.environmentSelect.click()
-    await detail.runExecutorModal.environmentOption('QA').click()
+    await detail.runExecutorModal.environmentSelect.selectOption('qa')
     await page.getByRole('button', { name: 'Start Run' }).click()
 
     // Select SKIPPED status
-    await page.getByText('Select result...').click()
-    await page.getByRole('option', { name: 'Skipped' }).click()
+    await detail.runExecutorModal.statusSelect.selectOption('SKIPPED')
 
     // Complete the run
     await page.getByRole('button', { name: 'Complete Run' }).click()
@@ -402,8 +384,7 @@ test.describe('Test Execution Flow - Two-Phase (Start Run -> Complete Run)', () 
     await expect(detail.runExecutorModal.notesField).toHaveValue('Pre-run observation: staging looks slow')
 
     // Select environment and start
-    await detail.runExecutorModal.environmentSelect.click()
-    await detail.runExecutorModal.environmentOption('Staging').click()
+    await detail.runExecutorModal.environmentSelect.selectOption('staging')
     await page.getByRole('button', { name: 'Start Run' }).click()
 
     // Notes field should still be visible after starting
@@ -437,18 +418,17 @@ test.describe('Test Execution Flow - Two-Phase (Start Run -> Complete Run)', () 
     await detail.runTestButton.click()
 
     // Select environment and start
-    await detail.runExecutorModal.environmentSelect.click()
-    await detail.runExecutorModal.environmentOption('Staging').click()
+    await detail.runExecutorModal.environmentSelect.selectOption('staging')
     await page.getByRole('button', { name: 'Start Run' }).click()
 
     // Timer should be visible (run is active)
     await expect(page.getByText('Elapsed Time')).toBeVisible()
 
-    // Click cancel
+    // Click cancel — with an active run this shows the close confirmation
     await detail.runExecutorModal.cancelButton.click()
 
-    // Modal should close
-    await expect(detail.runExecutorModal.modalTitle).not.toBeVisible()
+    // Close confirmation should appear (modal stays open but shows confirmation UI)
+    await expect(detail.runExecutorModal.closeConfirmationWarning).toBeVisible()
   })
 
   test('RunExecutor displays test case info and test type badge', async ({ page }) => {
@@ -458,8 +438,8 @@ test.describe('Test Execution Flow - Two-Phase (Start Run -> Complete Run)', () 
     await detail.goto('project-1', 'tc-1')
     await detail.runTestButton.click()
 
-    // Test case name should be in the modal
-    await expect(page.locator('[role="dialog"]').getByText('Login with valid credentials')).toBeVisible()
+    // Test case name should be in the modal (use heading role to avoid matching description text)
+    await expect(detail.runExecutorModal.heading('Login with valid credentials')).toBeVisible()
 
     // Description should be visible
     await expect(page.locator('[role="dialog"]').getByText('Verify that a user can log in with correct email and password')).toBeVisible()
@@ -513,14 +493,13 @@ test.describe('Test Execution Flow - EnvironmentSelector', () => {
     await detail.goto('project-1', 'tc-1')
     await detail.runTestButton.click()
 
-    // Click to open environment dropdown
-    await detail.runExecutorModal.environmentSelect.click()
-
-    // All predefined environments
-    await expect(detail.runExecutorModal.environmentOption('Development')).toBeVisible()
-    await expect(detail.runExecutorModal.environmentOption('Staging')).toBeVisible()
-    await expect(detail.runExecutorModal.environmentOption('Production')).toBeVisible()
-    await expect(detail.runExecutorModal.environmentOption('QA')).toBeVisible()
+    // Native <select> options exist in the DOM but aren't "visible" in the Playwright sense.
+    // Verify they exist as <option> elements inside the select.
+    const select = detail.runExecutorModal.environmentSelect
+    await expect(select.locator('option[value="development"]')).toHaveCount(1)
+    await expect(select.locator('option[value="staging"]')).toHaveCount(1)
+    await expect(select.locator('option[value="production"]')).toHaveCount(1)
+    await expect(select.locator('option[value="qa"]')).toHaveCount(1)
   })
 
   test('environment selector has a "Custom..." option', async ({ page }) => {
@@ -530,11 +509,9 @@ test.describe('Test Execution Flow - EnvironmentSelector', () => {
     await detail.goto('project-1', 'tc-1')
     await detail.runTestButton.click()
 
-    // Click to open environment dropdown
-    await detail.runExecutorModal.environmentSelect.click()
-
-    // "Custom..." option should be available
-    await expect(page.getByText('Custom...')).toBeVisible()
+    // Verify the Custom option exists inside the native select
+    const select = detail.runExecutorModal.environmentSelect
+    await expect(select.locator('option[value="__custom__"]')).toHaveCount(1)
   })
 
   test('selecting "Custom..." shows a text input for custom environment', async ({ page }) => {
@@ -544,9 +521,8 @@ test.describe('Test Execution Flow - EnvironmentSelector', () => {
     await detail.goto('project-1', 'tc-1')
     await detail.runTestButton.click()
 
-    // Click to open environment dropdown and select Custom
-    await detail.runExecutorModal.environmentSelect.click()
-    await page.getByText('Custom...').click()
+    // Select Custom via native select
+    await detail.runExecutorModal.environmentSelect.selectOption('__custom__')
 
     // Custom input should appear
     await expect(page.getByPlaceholder('Enter custom environment...')).toBeVisible()
@@ -561,8 +537,7 @@ test.describe('Test Execution Flow - EnvironmentSelector', () => {
     await detail.goto('project-1', 'tc-1')
     await detail.runTestButton.click()
 
-    await detail.runExecutorModal.environmentSelect.click()
-    await page.getByText('Custom...').click()
+    await detail.runExecutorModal.environmentSelect.selectOption('__custom__')
 
     // Set button should be disabled when empty
     await expect(page.getByRole('button', { name: 'Set' })).toBeDisabled()
@@ -577,9 +552,8 @@ test.describe('Test Execution Flow - EnvironmentSelector', () => {
     await detail.goto('project-1', 'tc-1')
     await detail.runTestButton.click()
 
-    // Select Custom...
-    await detail.runExecutorModal.environmentSelect.click()
-    await page.getByText('Custom...').click()
+    // Select Custom via native select
+    await detail.runExecutorModal.environmentSelect.selectOption('__custom__')
 
     // Type custom environment
     await page.getByPlaceholder('Enter custom environment...').fill('Integration')
@@ -615,8 +589,7 @@ test.describe('Test Execution Flow - API Call Verification', () => {
     await detail.goto('project-1', 'tc-1')
     await detail.runTestButton.click()
 
-    await detail.runExecutorModal.environmentSelect.click()
-    await detail.runExecutorModal.environmentOption('Staging').click()
+    await detail.runExecutorModal.environmentSelect.selectOption('staging')
     await page.getByRole('button', { name: 'Start Run' }).click()
 
     // Wait for the API call
@@ -651,13 +624,11 @@ test.describe('Test Execution Flow - API Call Verification', () => {
     await detail.runTestButton.click()
 
     // Start
-    await detail.runExecutorModal.environmentSelect.click()
-    await detail.runExecutorModal.environmentOption('Staging').click()
+    await detail.runExecutorModal.environmentSelect.selectOption('staging')
     await page.getByRole('button', { name: 'Start Run' }).click()
 
     // Complete with PASS and notes
-    await page.getByText('Select result...').click()
-    await page.getByRole('option', { name: 'Pass' }).click()
+    await detail.runExecutorModal.statusSelect.selectOption('PASS')
     await detail.runExecutorModal.notesField.fill('All steps verified successfully')
     await page.getByRole('button', { name: 'Complete Run' }).click()
 

@@ -328,7 +328,7 @@ test.describe('Attachments - Test Run Detail Page', () => {
     await expect(previewImage).toHaveAttribute('alt', 'screenshot-login.png')
 
     // Close button and Download button should be in the modal footer
-    await expect(page.locator('[role="dialog"]').getByRole('button', { name: 'Close' })).toBeVisible()
+    await expect(page.locator('[role="dialog"]').getByText('Close')).toBeVisible()
     await expect(page.locator('[role="dialog"]').getByRole('button', { name: 'Download' })).toBeVisible()
   })
 
@@ -345,8 +345,8 @@ test.describe('Attachments - Test Run Detail Page', () => {
     // Modal should be open
     await expect(page.locator('[role="dialog"]').getByText('screenshot-login.png')).toBeVisible()
 
-    // Close it
-    await page.locator('[role="dialog"]').getByRole('button', { name: 'Close' }).click()
+    // Close it (use getByText to target the footer "Close" button, not the X icon button)
+    await page.locator('[role="dialog"]').getByText('Close').click()
 
     // Modal should be closed
     await expect(page.locator('[role="dialog"]').getByText('screenshot-login.png')).not.toBeVisible()

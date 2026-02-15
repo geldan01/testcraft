@@ -6,6 +6,8 @@ import type {
 } from '~/types'
 
 export const useTestPlan = () => {
+  const toast = useToast()
+
   async function getTestPlans(
     projectId: string,
     page = 1,
@@ -34,7 +36,9 @@ export const useTestPlan = () => {
         method: 'POST',
         body: data,
       })
-    } catch {
+    } catch (err: unknown) {
+      const message = (err as { data?: { message?: string } })?.data?.message ?? 'Failed to create test plan'
+      toast.add({ title: message, color: 'error' })
       return null
     }
   }
@@ -45,7 +49,9 @@ export const useTestPlan = () => {
         method: 'PUT',
         body: data,
       })
-    } catch {
+    } catch (err: unknown) {
+      const message = (err as { data?: { message?: string } })?.data?.message ?? 'Failed to update test plan'
+      toast.add({ title: message, color: 'error' })
       return null
     }
   }
@@ -54,7 +60,9 @@ export const useTestPlan = () => {
     try {
       await $fetch(`/api/test-plans/${planId}`, { method: 'DELETE' })
       return true
-    } catch {
+    } catch (err: unknown) {
+      const message = (err as { data?: { message?: string } })?.data?.message ?? 'Failed to delete test plan'
+      toast.add({ title: message, color: 'error' })
       return false
     }
   }
@@ -66,7 +74,9 @@ export const useTestPlan = () => {
         body: { testCaseId: caseId },
       })
       return true
-    } catch {
+    } catch (err: unknown) {
+      const message = (err as { data?: { message?: string } })?.data?.message ?? 'Failed to link test case'
+      toast.add({ title: message, color: 'error' })
       return false
     }
   }
@@ -77,7 +87,9 @@ export const useTestPlan = () => {
         method: 'DELETE',
       })
       return true
-    } catch {
+    } catch (err: unknown) {
+      const message = (err as { data?: { message?: string } })?.data?.message ?? 'Failed to unlink test case'
+      toast.add({ title: message, color: 'error' })
       return false
     }
   }

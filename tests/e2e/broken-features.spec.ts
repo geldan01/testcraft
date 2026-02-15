@@ -105,28 +105,18 @@ test.describe('Broken Features - Login Page', () => {
     await page.context().clearCookies()
   })
 
-  test('Google OAuth button exists but is a non-functional placeholder', async ({ page }) => {
+  test('Google OAuth button is visible and disabled with coming soon notice', async ({ page }) => {
     await loginPage.goto()
 
     await expect(loginPage.googleOAuthButton).toBeVisible()
-
-    // Clicking should not navigate away from the login page
-    const urlBefore = page.url()
-    await loginPage.googleOAuthButton.click()
-    await page.waitForTimeout(500)
-    await expect(page).toHaveURL(urlBefore)
+    await expect(loginPage.googleOAuthButton).toBeDisabled()
   })
 
-  test('Facebook OAuth button exists but is a non-functional placeholder', async ({ page }) => {
+  test('Facebook OAuth button is visible and disabled with coming soon notice', async ({ page }) => {
     await loginPage.goto()
 
     await expect(loginPage.facebookOAuthButton).toBeVisible()
-
-    // Clicking should not navigate away from the login page
-    const urlBefore = page.url()
-    await loginPage.facebookOAuthButton.click()
-    await page.waitForTimeout(500)
-    await expect(page).toHaveURL(urlBefore)
+    await expect(loginPage.facebookOAuthButton).toBeDisabled()
   })
 })
 
@@ -143,26 +133,18 @@ test.describe('Broken Features - Register Page', () => {
     await page.context().clearCookies()
   })
 
-  test('Google OAuth button exists but is a non-functional placeholder', async ({ page }) => {
+  test('Google OAuth button is visible and disabled with coming soon notice', async ({ page }) => {
     await registerPage.goto()
 
     await expect(registerPage.googleOAuthButton).toBeVisible()
-
-    const urlBefore = page.url()
-    await registerPage.googleOAuthButton.click()
-    await page.waitForTimeout(500)
-    await expect(page).toHaveURL(urlBefore)
+    await expect(registerPage.googleOAuthButton).toBeDisabled()
   })
 
-  test('Facebook OAuth button exists but is a non-functional placeholder', async ({ page }) => {
+  test('Facebook OAuth button is visible and disabled with coming soon notice', async ({ page }) => {
     await registerPage.goto()
 
     await expect(registerPage.facebookOAuthButton).toBeVisible()
-
-    const urlBefore = page.url()
-    await registerPage.facebookOAuthButton.click()
-    await page.waitForTimeout(500)
-    await expect(page).toHaveURL(urlBefore)
+    await expect(registerPage.facebookOAuthButton).toBeDisabled()
   })
 })
 

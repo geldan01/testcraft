@@ -7,10 +7,16 @@ import { userSelectFields } from '~/server/utils/auth'
 const registerSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100),
   email: z.string().email('Invalid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+  password: z.string()
+    .min(8, 'Password must be at least 8 characters')
+    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+    .regex(/\d/, 'Password must contain at least one digit'),
 })
 
 export default defineEventHandler(async (event) => {
+  rateLimit(event, { max: 5, windowSeconds: 60, key: 'auth-register' })
+
   const body = await readBody(event)
 
   const result = registerSchema.safeParse(body)

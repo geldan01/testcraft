@@ -81,6 +81,7 @@ export default defineEventHandler(async (event) => {
   await updateTestCaseLastRun(testCaseId)
 
   await logActivity(user.id, 'CREATED', 'TestRun', testRun.id, {
+    name: testCase.name,
     testCaseId,
     status: 'IN_PROGRESS',
     environment,

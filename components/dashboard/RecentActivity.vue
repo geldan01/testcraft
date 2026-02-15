@@ -34,9 +34,30 @@ function getActivityColor(actionType: string): string {
 
 function formatObjectType(type: string): string {
   return type
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
     .split('_')
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(' ')
+}
+
+function getObjectName(activity: ActivityLog): string | null {
+  const changes = activity.changes
+  if (!changes) return null
+
+  if (typeof changes.name === 'string') return changes.name
+  if (typeof changes.fileName === 'string') return changes.fileName
+
+  return null
+}
+
+function getActivityVerb(activity: ActivityLog): string {
+  const action = activity.actionType?.toLowerCase()
+  if (activity.objectType === 'TestRun' && activity.changes) {
+    const runAction = activity.changes.action as string | undefined
+    if (runAction === 'started') return 'started'
+    if (runAction === 'completed') return 'completed'
+  }
+  return action ?? 'performed action on'
 }
 
 function formatTimestamp(timestamp: string): string {
@@ -119,12 +140,16 @@ function formatTimestamp(timestamp: string): string {
             <span class="font-medium">{{ activity.user?.name ?? 'Unknown' }}</span>
             {{ ' ' }}
             <span class="text-gray-600 dark:text-gray-400">
-              {{ activity.actionType?.toLowerCase() ?? 'performed action' }}
+              {{ getActivityVerb(activity) }}
             </span>
             {{ ' ' }}
             <span class="font-medium">
               {{ activity.objectType ? formatObjectType(activity.objectType) : 'item' }}
             </span>
+            <template v-if="getObjectName(activity)">
+              {{ ' ' }}
+              <span class="text-gray-500 dark:text-gray-400">&ldquo;{{ getObjectName(activity) }}&rdquo;</span>
+            </template>
           </p>
           <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
             {{ formatTimestamp(activity.timestamp) }}

@@ -24,19 +24,8 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, statusMessage: 'Test case not found' })
   }
 
-  // Verify access
-  const membership = await prisma.organizationMember.findUnique({
-    where: {
-      organizationId_userId: {
-        organizationId: testCase.project.organizationId,
-        userId: user.id,
-      },
-    },
-  })
-
-  if (!membership) {
-    throw createError({ statusCode: 403, statusMessage: 'You do not have access to this test case' })
-  }
+  // Verify access and RBAC permission
+  await requireRbacPermission(user.id, testCase.project.organizationId, 'TEST_CASE', 'EDIT')
 
   // Parse optional body
   const body = await readBody(event).catch(() => ({}))
@@ -76,6 +65,7 @@ export default defineEventHandler(async (event) => {
   }
 
   await logActivity(user.id, 'UPDATED', 'TestCase', caseId, {
+    name: testCase.name,
     debugFlag: newDebugFlag,
   })
 

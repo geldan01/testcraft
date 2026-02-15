@@ -5,6 +5,7 @@ export class CommentsSection {
 
   get section(): Locator { return this.page.getByTestId('comments-section') }
   get heading(): Locator { return this.page.getByRole('heading', { name: /Comments/ }) }
+  get commentsHeading(): Locator { return this.page.getByTestId('comments-count') }
   commentsCount(n: number): Locator { return this.page.getByTestId('comments-count').filter({ hasText: `Comments (${n})` }) }
   get emptyMessage(): Locator { return this.page.getByTestId('comments-empty-message') }
   authorName(name: string): Locator { return this.page.getByTestId('comments-author-name').filter({ hasText: name }) }

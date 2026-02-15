@@ -6,6 +6,8 @@ import type {
 } from '~/types'
 
 export const useTestSuite = () => {
+  const toast = useToast()
+
   async function getTestSuites(
     projectId: string,
     page = 1,
@@ -34,7 +36,9 @@ export const useTestSuite = () => {
         method: 'POST',
         body: data,
       })
-    } catch {
+    } catch (err: unknown) {
+      const message = (err as { data?: { message?: string } })?.data?.message ?? 'Failed to create test suite'
+      toast.add({ title: message, color: 'error' })
       return null
     }
   }
@@ -45,7 +49,9 @@ export const useTestSuite = () => {
         method: 'PUT',
         body: data,
       })
-    } catch {
+    } catch (err: unknown) {
+      const message = (err as { data?: { message?: string } })?.data?.message ?? 'Failed to update test suite'
+      toast.add({ title: message, color: 'error' })
       return null
     }
   }
@@ -54,7 +60,9 @@ export const useTestSuite = () => {
     try {
       await $fetch(`/api/test-suites/${suiteId}`, { method: 'DELETE' })
       return true
-    } catch {
+    } catch (err: unknown) {
+      const message = (err as { data?: { message?: string } })?.data?.message ?? 'Failed to delete test suite'
+      toast.add({ title: message, color: 'error' })
       return false
     }
   }
@@ -66,7 +74,9 @@ export const useTestSuite = () => {
         body: { testCaseId: caseId },
       })
       return true
-    } catch {
+    } catch (err: unknown) {
+      const message = (err as { data?: { message?: string } })?.data?.message ?? 'Failed to link test case'
+      toast.add({ title: message, color: 'error' })
       return false
     }
   }
@@ -77,7 +87,9 @@ export const useTestSuite = () => {
         method: 'DELETE',
       })
       return true
-    } catch {
+    } catch (err: unknown) {
+      const message = (err as { data?: { message?: string } })?.data?.message ?? 'Failed to unlink test case'
+      toast.add({ title: message, color: 'error' })
       return false
     }
   }

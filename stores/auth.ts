@@ -31,7 +31,7 @@ export const useAuthStore = defineStore('auth', {
   },
 
   actions: {
-    async login(credentials: LoginRequest): Promise<AuthResponse> {
+    async login(credentials: LoginRequest, rememberMe = true): Promise<AuthResponse> {
       try {
         const response = await $fetch<AuthResponse>('/api/auth/login', {
           method: 'POST',
@@ -40,7 +40,7 @@ export const useAuthStore = defineStore('auth', {
 
         this.user = response.user
         this.token = response.token
-        this._persistToken(response.token)
+        this._persistToken(response.token, rememberMe)
 
         return response
       } catch (error: unknown) {
@@ -113,9 +113,9 @@ export const useAuthStore = defineStore('auth', {
      * Persist or clear the JWT token in a cookie.
      * Uses `useCookie()` for universal SSR/client compatibility.
      */
-    _persistToken(token: string | null): void {
+    _persistToken(token: string | null, rememberMe = true): void {
       const tokenCookie = useCookie(TOKEN_COOKIE_NAME, {
-        maxAge: token ? TOKEN_MAX_AGE : -1,
+        maxAge: token ? (rememberMe ? TOKEN_MAX_AGE : undefined) : -1,
         path: '/',
         sameSite: 'lax',
       })

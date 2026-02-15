@@ -52,7 +52,9 @@ const tabs = [
   { label: 'RBAC Settings', value: 'rbac', icon: 'i-lucide-shield' },
 ]
 
-function getRoleBadgeColor(role: string): string {
+type BadgeColor = 'error' | 'warning' | 'info' | 'success' | 'neutral'
+
+function getRoleBadgeColor(role: string): BadgeColor {
   switch (role) {
     case 'ORGANIZATION_MANAGER': return 'error'
     case 'PROJECT_MANAGER': return 'warning'
@@ -234,7 +236,7 @@ async function handleCreateProject() {
                 </div>
               </div>
               <UBadge
-                :color="getRoleBadgeColor(member.role) as any"
+                :color="getRoleBadgeColor(member.role)"
                 variant="subtle"
                 size="sm"
               >
@@ -285,7 +287,7 @@ async function handleCreateProject() {
                   class="border-b border-gray-100 dark:border-gray-800 last:border-0"
                 >
                   <td class="py-2 px-3">
-                    <UBadge :color="getRoleBadgeColor(perm.role) as any" variant="subtle" size="xs">
+                    <UBadge :color="getRoleBadgeColor(perm.role)" variant="subtle" size="xs">
                       {{ formatRole(perm.role) }}
                     </UBadge>
                   </td>
