@@ -57,6 +57,11 @@ const projectNavItems = computed<NavigationItem[]>(() => {
       icon: 'i-lucide-bug',
       to: `/projects/${projectId}/debug-queue`,
     },
+    {
+      label: 'Reports',
+      icon: 'i-lucide-bar-chart-3',
+      to: `/projects/${projectId}/reports`,
+    },
   ]
 })
 

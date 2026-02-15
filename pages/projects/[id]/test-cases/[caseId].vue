@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { TestCase, TestPlan, TestSuite, TestRun, Comment, Attachment } from '~/types'
+import type { TestCase, TestPlan, TestSuite, TestRun, Comment, Attachment, TestStep, TestType, UpdateTestCaseInput } from '~/types'
 
 definePageMeta({
   middleware: 'auth',
@@ -9,7 +9,7 @@ const route = useRoute()
 const projectId = computed(() => route.params.id as string)
 const caseId = computed(() => route.params.caseId as string)
 
-const { getTestCase, toggleDebugFlag, getComments, addComment, getAttachments } = useTestCase()
+const { getTestCase, updateTestCase, toggleDebugFlag, getComments, addComment, getAttachments } = useTestCase()
 const { getRunsForTestCase } = useTestRun()
 const { getTestPlans, linkTestCase: linkToPlan, unlinkTestCase: unlinkFromPlan } = useTestPlan()
 const { getTestSuites, linkTestCase: linkToSuite, unlinkTestCase: unlinkFromSuite } = useTestSuite()
@@ -22,6 +22,18 @@ const loading = ref(true)
 const showRunExecutor = ref(false)
 const newComment = ref('')
 const submittingComment = ref(false)
+
+// Edit mode
+const editing = ref(false)
+const editName = ref('')
+const editDescription = ref('')
+const editTestType = ref<TestType>('STEP_BASED')
+const editPreconditions = ref<string[]>([])
+const editSteps = ref<TestStep[]>([])
+const editGherkinSyntax = ref('')
+const editNewPrecondition = ref('')
+const saving = ref(false)
+const editError = ref('')
 
 // Test plans modal
 const showAddPlansModal = ref(false)
@@ -162,6 +174,77 @@ async function handleUnlinkSuite(suiteId: string) {
   if (success) await loadData()
 }
 
+function startEditing() {
+  if (!testCase.value) return
+  editName.value = testCase.value.name
+  editDescription.value = testCase.value.description ?? ''
+  editTestType.value = testCase.value.testType
+  const rawPre = testCase.value.preconditions
+  editPreconditions.value = Array.isArray(rawPre) ? [...rawPre] : (rawPre && Array.isArray((rawPre as any).items) ? [...(rawPre as any).items] : [])
+  const rawSteps = testCase.value.steps
+  const stepsArr = Array.isArray(rawSteps) ? rawSteps : (rawSteps && Array.isArray((rawSteps as any).steps) ? (rawSteps as any).steps : [])
+  editSteps.value = JSON.parse(JSON.stringify(stepsArr))
+  editGherkinSyntax.value = testCase.value.gherkinSyntax ?? ''
+  editNewPrecondition.value = ''
+  editError.value = ''
+  editing.value = true
+}
+
+function cancelEditing() {
+  editing.value = false
+  editError.value = ''
+}
+
+function addEditPrecondition() {
+  if (editNewPrecondition.value.trim()) {
+    editPreconditions.value.push(editNewPrecondition.value.trim())
+    editNewPrecondition.value = ''
+  }
+}
+
+function removeEditPrecondition(index: number) {
+  editPreconditions.value.splice(index, 1)
+}
+
+const isEditValid = computed(() => {
+  if (!editName.value.trim()) return false
+  if (editTestType.value === 'STEP_BASED' && editSteps.value.length === 0) return false
+  if (editTestType.value === 'GHERKIN' && !editGherkinSyntax.value.trim()) return false
+  return true
+})
+
+async function handleSaveEdit() {
+  if (!isEditValid.value) return
+  editError.value = ''
+  saving.value = true
+  try {
+    const data: UpdateTestCaseInput = {
+      name: editName.value.trim(),
+      description: editDescription.value.trim() || undefined,
+      testType: editTestType.value,
+      preconditions: editPreconditions.value.length > 0 ? editPreconditions.value : undefined,
+    }
+    if (editTestType.value === 'STEP_BASED') {
+      data.steps = editSteps.value
+      data.gherkinSyntax = undefined
+    } else {
+      data.gherkinSyntax = editGherkinSyntax.value
+      data.steps = undefined
+    }
+    const result = await updateTestCase(caseId.value, data)
+    if (result) {
+      editing.value = false
+      await loadData()
+    } else {
+      editError.value = 'Failed to save changes. Please try again.'
+    }
+  } catch {
+    editError.value = 'An error occurred. Please try again.'
+  } finally {
+    saving.value = false
+  }
+}
+
 async function handleToggleDebug() {
   if (!testCase.value) return
   const result = await toggleDebugFlag(caseId.value)
@@ -220,6 +303,20 @@ function formatRelativeTime(dateStr: string): string {
 }
 
 const recentRuns = computed(() => runs.value.slice(0, 5))
+
+const normalizedPreconditions = computed(() => {
+  const raw = testCase.value?.preconditions
+  if (Array.isArray(raw)) return raw
+  if (raw && Array.isArray((raw as any).items)) return (raw as any).items as string[]
+  return []
+})
+
+const normalizedSteps = computed(() => {
+  const raw = testCase.value?.steps
+  if (Array.isArray(raw)) return raw
+  if (raw && Array.isArray((raw as any).steps)) return (raw as any).steps as TestStep[]
+  return []
+})
 </script>
 
 <template>
@@ -232,6 +329,169 @@ const recentRuns = computed(() => runs.value.slice(0, 5))
     </div>
 
     <template v-else-if="testCase">
+      <!-- ========== EDIT MODE ========== -->
+      <div v-if="editing" class="max-w-3xl space-y-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Edit Test Case</h1>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              Update the test case details below.
+            </p>
+          </div>
+          <UButton
+            variant="ghost"
+            color="neutral"
+            icon="i-lucide-x"
+            data-testid="test-case-edit-cancel-button"
+            @click="cancelEditing"
+          >
+            Cancel
+          </UButton>
+        </div>
+
+        <div
+          v-if="editError"
+          class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3 flex items-start gap-2"
+          role="alert"
+        >
+          <UIcon name="i-lucide-alert-circle" class="text-red-500 text-lg shrink-0 mt-0.5" />
+          <p class="text-sm text-red-700 dark:text-red-300">{{ editError }}</p>
+        </div>
+
+        <form class="space-y-6" @submit.prevent="handleSaveEdit">
+          <UCard>
+            <template #header>
+              <h2 class="text-base font-semibold">Basic Information</h2>
+            </template>
+            <div class="space-y-4">
+              <UFormField label="Test case name" required>
+                <UInput
+                  v-model="editName"
+                  placeholder="e.g., Verify user login with valid credentials"
+                  class="w-full"
+                  data-testid="test-case-edit-name-input"
+                />
+              </UFormField>
+
+              <UFormField label="Description">
+                <UTextarea
+                  v-model="editDescription"
+                  placeholder="Describe what this test case validates..."
+                  :rows="3"
+                  class="w-full"
+                  data-testid="test-case-edit-description-input"
+                />
+              </UFormField>
+
+              <UFormField label="Test type" required>
+                <div class="flex rounded-lg border border-gray-200 dark:border-gray-700 w-fit">
+                  <button
+                    type="button"
+                    class="px-4 py-2 text-sm font-medium rounded-l-lg transition-colors"
+                    :class="editTestType === 'STEP_BASED'
+                      ? 'bg-indigo-600 text-white'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'"
+                    data-testid="test-case-edit-step-based-button"
+                    @click="editTestType = 'STEP_BASED'"
+                  >
+                    Step-Based
+                  </button>
+                  <button
+                    type="button"
+                    class="px-4 py-2 text-sm font-medium rounded-r-lg transition-colors"
+                    :class="editTestType === 'GHERKIN'
+                      ? 'bg-indigo-600 text-white'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'"
+                    data-testid="test-case-edit-gherkin-button"
+                    @click="editTestType = 'GHERKIN'"
+                  >
+                    Gherkin (BDD)
+                  </button>
+                </div>
+              </UFormField>
+            </div>
+          </UCard>
+
+          <UCard>
+            <template #header>
+              <h2 class="text-base font-semibold">Preconditions</h2>
+            </template>
+            <div class="space-y-3">
+              <div class="flex gap-2">
+                <UInput
+                  v-model="editNewPrecondition"
+                  placeholder="Add a precondition..."
+                  class="flex-1"
+                  data-testid="test-case-edit-precondition-input"
+                  @keydown.enter.prevent="addEditPrecondition"
+                />
+                <UButton
+                  icon="i-lucide-plus"
+                  variant="soft"
+                  data-testid="test-case-edit-add-precondition-button"
+                  @click="addEditPrecondition"
+                >
+                  Add
+                </UButton>
+              </div>
+
+              <ul v-if="editPreconditions.length > 0" class="space-y-2">
+                <li
+                  v-for="(pre, index) in editPreconditions"
+                  :key="index"
+                  class="flex items-center gap-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg px-3 py-2"
+                >
+                  <UIcon name="i-lucide-check-square" class="text-green-500 shrink-0" />
+                  <span class="flex-1 text-sm text-gray-700 dark:text-gray-300">{{ pre }}</span>
+                  <UButton
+                    icon="i-lucide-x"
+                    variant="ghost"
+                    color="error"
+                    size="xs"
+                    aria-label="Remove precondition"
+                    @click="removeEditPrecondition(index)"
+                  />
+                </li>
+              </ul>
+              <p v-else class="text-sm text-gray-400 dark:text-gray-400 italic">
+                No preconditions added.
+              </p>
+            </div>
+          </UCard>
+
+          <UCard>
+            <template v-if="editTestType === 'STEP_BASED'">
+              <TestStepBuilder v-model="editSteps" />
+            </template>
+            <template v-else>
+              <TestGherkinEditor v-model="editGherkinSyntax" />
+            </template>
+          </UCard>
+
+          <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-800">
+            <UButton
+              variant="ghost"
+              color="neutral"
+              data-testid="test-case-edit-cancel-button"
+              @click="cancelEditing"
+            >
+              Cancel
+            </UButton>
+            <UButton
+              type="submit"
+              :loading="saving"
+              :disabled="!isEditValid"
+              icon="i-lucide-check"
+              data-testid="test-case-edit-save-button"
+            >
+              Save Changes
+            </UButton>
+          </div>
+        </form>
+      </div>
+
+      <!-- ========== VIEW MODE ========== -->
+      <template v-else>
       <!-- Header -->
       <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
         <div class="space-y-2">
@@ -284,6 +544,7 @@ const recentRuns = computed(() => runs.value.slice(0, 5))
             color="neutral"
             size="sm"
             data-testid="test-case-detail-edit-button"
+            @click="startEditing"
           >
             Edit
           </UButton>
@@ -291,13 +552,13 @@ const recentRuns = computed(() => runs.value.slice(0, 5))
       </div>
 
       <!-- Preconditions -->
-      <UCard v-if="testCase.preconditions && testCase.preconditions.length > 0" :ui="{ header: 'bg-gray-500/20 dark:bg-gray-500/10' }">
+      <UCard v-if="normalizedPreconditions.length > 0" :ui="{ header: 'bg-gray-500/10 dark:bg-gray-500/5' }">
         <template #header>
           <h3 class="text-sm font-semibold text-black dark:text-white">Preconditions</h3>
         </template>
         <ul class="space-y-1">
           <li
-            v-for="(precondition, index) in testCase.preconditions"
+            v-for="(precondition, index) in normalizedPreconditions"
             :key="index"
             class="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300"
           >
@@ -308,10 +569,10 @@ const recentRuns = computed(() => runs.value.slice(0, 5))
       </UCard>
 
       <!-- Test Steps (Step-Based) -->
-      <UCard v-if="testCase.testType === 'STEP_BASED' && testCase.steps && testCase.steps.length > 0" :ui="{ header: 'bg-gray-500/20 dark:bg-gray-500/10' }">
+      <UCard v-if="testCase.testType === 'STEP_BASED' && normalizedSteps.length > 0" :ui="{ header: 'bg-gray-500/10 dark:bg-gray-500/5' }">
         <template #header>
           <h3 class="text-sm font-semibold text-black dark:text-white" data-testid="test-case-detail-steps-heading">
-            Test Steps ({{ testCase.steps.length }})
+            Test Steps ({{ normalizedSteps.length }})
           </h3>
         </template>
         <div class="overflow-x-auto">
@@ -326,7 +587,7 @@ const recentRuns = computed(() => runs.value.slice(0, 5))
             </thead>
             <tbody>
               <tr
-                v-for="step in testCase.steps"
+                v-for="step in normalizedSteps"
                 :key="step.stepNumber"
                 class="border-b border-gray-100 dark:border-gray-800 last:border-0"
               >
@@ -343,7 +604,7 @@ const recentRuns = computed(() => runs.value.slice(0, 5))
       </UCard>
 
       <!-- Gherkin Syntax -->
-      <UCard v-if="testCase.testType === 'GHERKIN' && testCase.gherkinSyntax" :ui="{ header: 'bg-gray-500/20 dark:bg-gray-500/10' }">
+      <UCard v-if="testCase.testType === 'GHERKIN' && testCase.gherkinSyntax" :ui="{ header: 'bg-gray-500/10 dark:bg-gray-500/5' }">
         <template #header>
           <h3 class="text-sm font-semibold text-black dark:text-white">Gherkin Syntax</h3>
         </template>
@@ -353,7 +614,7 @@ const recentRuns = computed(() => runs.value.slice(0, 5))
       <!-- Linked Test Plans & Suites -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <!-- Test Plans -->
-        <UCard :ui="{ header: 'bg-gray-500/20 dark:bg-gray-500/10' }">
+        <UCard :ui="{ header: 'bg-gray-500/10 dark:bg-gray-500/5' }">
           <template #header>
             <div class="flex items-center justify-between">
               <h3 class="text-sm font-semibold text-black dark:text-white" data-testid="test-case-detail-plans-heading">
@@ -395,7 +656,7 @@ const recentRuns = computed(() => runs.value.slice(0, 5))
         </UCard>
 
         <!-- Test Suites -->
-        <UCard :ui="{ header: 'bg-gray-500/20 dark:bg-gray-500/10' }">
+        <UCard :ui="{ header: 'bg-gray-500/10 dark:bg-gray-500/5' }">
           <template #header>
             <div class="flex items-center justify-between">
               <h3 class="text-sm font-semibold text-black dark:text-white" data-testid="test-case-detail-suites-heading">
@@ -443,7 +704,7 @@ const recentRuns = computed(() => runs.value.slice(0, 5))
       </div>
 
       <!-- Test Run History (compact, last 5 runs) -->
-      <UCard :ui="{ header: 'bg-gray-500/20 dark:bg-gray-500/10' }">
+      <UCard :ui="{ header: 'bg-gray-500/10 dark:bg-gray-500/5' }">
         <template #header>
           <div class="flex items-center justify-between">
             <h3 class="text-sm font-semibold text-black dark:text-white" data-testid="test-case-detail-run-history-heading">
@@ -528,7 +789,7 @@ const recentRuns = computed(() => runs.value.slice(0, 5))
       </UCard>
 
       <!-- Comments -->
-      <UCard data-testid="comments-section" :ui="{ header: 'bg-gray-500/20 dark:bg-gray-500/10' }">
+      <UCard data-testid="comments-section" :ui="{ header: 'bg-gray-500/10 dark:bg-gray-500/5' }">
         <template #header>
           <h3 class="text-sm font-semibold text-black dark:text-white" data-testid="comments-count">
             Comments ({{ comments.length }})
@@ -589,7 +850,7 @@ const recentRuns = computed(() => runs.value.slice(0, 5))
       </UCard>
 
       <!-- Attachments -->
-      <UCard :ui="{ header: 'bg-gray-500/20 dark:bg-gray-500/10' }">
+      <UCard :ui="{ header: 'bg-gray-500/10 dark:bg-gray-500/5' }">
         <template #header>
           <div class="flex items-center justify-between">
             <h3 class="text-sm font-semibold text-black dark:text-white">
@@ -631,6 +892,8 @@ const recentRuns = computed(() => runs.value.slice(0, 5))
           </div>
         </div>
       </UCard>
+
+      </template>
 
       <!-- Run Executor Modal -->
       <TestRunExecutor

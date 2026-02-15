@@ -7,7 +7,7 @@ import { logActivity } from '~/server/utils/activity'
 const testStepSchema = z.object({
   stepNumber: z.number().int().min(1),
   action: z.string().min(1),
-  data: z.string(),
+  data: z.string().optional().default(''),
   expectedResult: z.string(),
 })
 

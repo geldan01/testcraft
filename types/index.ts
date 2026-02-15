@@ -479,6 +479,102 @@ export interface QuickStat {
 }
 
 // =============================================================================
+// REPORTING TYPES
+// =============================================================================
+
+export type ReportTimeRange = '24h' | '3d' | '7d' | 'all' | 'custom'
+
+export type ReportScope = 'global' | 'test-plan' | 'test-suite'
+
+export interface ReportFilters {
+  timeRange: ReportTimeRange
+  dateFrom?: string
+  dateTo?: string
+  scope: ReportScope
+  scopeId?: string
+}
+
+export interface StatusBreakdown {
+  status: TestRunStatus
+  count: number
+  percentage: number
+}
+
+export interface StatusBreakdownResponse {
+  breakdown: StatusBreakdown[]
+  total: number
+}
+
+export interface ExecutionTrendPoint {
+  date: string
+  totalExecuted: number
+  passCount: number
+  failCount: number
+  passRate: number
+}
+
+export interface ExecutionTrendResponse {
+  trend: ExecutionTrendPoint[]
+}
+
+export interface EnvironmentComparison {
+  environment: string
+  totalRuns: number
+  passCount: number
+  failCount: number
+  passRate: number
+}
+
+export interface EnvironmentComparisonResponse {
+  environments: EnvironmentComparison[]
+}
+
+export interface FlakyTest {
+  testCaseId: string
+  testCaseName: string
+  totalRuns: number
+  passCount: number
+  failCount: number
+  flakinessScore: number
+  debugFlag: boolean
+  lastRunAt: string | null
+}
+
+export interface FlakyTestResponse {
+  tests: FlakyTest[]
+}
+
+export interface TopFailingTest {
+  testCaseId: string
+  testCaseName: string
+  failCount: number
+  totalRuns: number
+  failRate: number
+  debugFlag: boolean
+  lastFailedAt: string | null
+}
+
+export interface TopFailingTestResponse {
+  tests: TopFailingTest[]
+}
+
+export interface ReportExportData {
+  projectName: string
+  filters: ReportFilters
+  statusBreakdown: StatusBreakdownResponse | null
+  executionTrend: ExecutionTrendResponse | null
+  environmentComparison: EnvironmentComparisonResponse | null
+  flakyTests: FlakyTestResponse | null
+  topFailingTests: TopFailingTestResponse | null
+}
+
+export interface ChartImages {
+  statusBreakdown?: string
+  executionTrend?: string
+  environmentComparison?: string
+}
+
+// =============================================================================
 // NAVIGATION TYPES
 // =============================================================================
 

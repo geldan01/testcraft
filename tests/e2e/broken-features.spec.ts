@@ -2,17 +2,15 @@ import { test, expect } from './fixtures'
 import {
   LoginPage,
   RegisterPage,
-  DashboardPage,
   OrganizationDetailPage,
   ProjectDetailPage,
   TestCaseDetailPage,
   TestSuiteDetailPage,
   SettingsPage,
 } from './pages'
-import { MOCK_USER, MOCK_ORG, MOCK_PROJECT, MOCK_STATS } from './helpers'
+import { MOCK_USER, MOCK_ORG, MOCK_PROJECT } from './helpers'
 import {
   mockProjectApi,
-  mockDashboardApis,
   mockProjectsListApi,
   mockOrgDetailApis,
   mockTestCaseDetailApis,
@@ -145,34 +143,6 @@ test.describe('Broken Features - Register Page', () => {
 
     await expect(registerPage.facebookOAuthButton).toBeVisible()
     await expect(registerPage.facebookOAuthButton).toBeDisabled()
-  })
-})
-
-// ---------------------------------------------------------------------------
-// Dashboard - View Reports button
-// ---------------------------------------------------------------------------
-test.describe('Broken Features - Dashboard', () => {
-  let dashboard: DashboardPage
-
-  test.beforeEach(async ({ page }) => {
-    dashboard = new DashboardPage(page)
-
-    await mockDashboardApis(page, {
-      projects: [{ id: 'project-1', name: 'Web App', organizationId: 'org-1', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), _count: { testCases: 42, testPlans: 3, testSuites: 4, members: 5 } }],
-      stats: MOCK_STATS,
-    })
-  })
-
-  test('"View Reports" quick action button has no handler', async ({ page }) => {
-    await dashboard.goto()
-
-    await expect(dashboard.viewReportsButton).toBeVisible()
-
-    // Clicking should not navigate anywhere
-    const urlBefore = page.url()
-    await dashboard.viewReportsButton.click()
-    await page.waitForTimeout(500)
-    await expect(page).toHaveURL(urlBefore)
   })
 })
 

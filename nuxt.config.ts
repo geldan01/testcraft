@@ -11,6 +11,10 @@ export default defineNuxtConfig({
     '@vueuse/nuxt',
   ],
 
+  build: {
+    transpile: ['echarts', 'vue-echarts', 'resize-detector'],
+  },
+
   runtimeConfig: {
     jwtSecret: process.env.JWT_SECRET || 'dev-secret-change-in-production',
     public: {
