@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { watchDebounced } from '@vueuse/core'
 import type { TestCase, TestCaseFilters, TestRunStatus, TestType } from '~/types'
 
 definePageMeta({
@@ -70,8 +71,14 @@ async function loadTestCases() {
   }
 }
 
-// Watch filters and reload
-watch([search, statusFilter, typeFilter, debugFilter], () => {
+// Debounce search input to avoid excessive API calls
+watchDebounced(search, () => {
+  page.value = 1
+  loadTestCases()
+}, { debounce: 300 })
+
+// Filters apply immediately
+watch([statusFilter, typeFilter, debugFilter], () => {
   page.value = 1
   loadTestCases()
 })
@@ -92,6 +99,19 @@ async function handleToggleDebug(caseId: string) {
     if (index !== -1) {
       testCases.value[index] = result
     }
+  }
+}
+
+async function handleBulkDelete() {
+  const ids = Array.from(selectedIds.value)
+  let deleted = 0
+  for (const id of ids) {
+    const success = await deleteTestCase(id)
+    if (success) deleted++
+  }
+  selectedIds.value.clear()
+  if (deleted > 0) {
+    await loadTestCases()
   }
 }
 
@@ -193,7 +213,7 @@ const debugFlaggedCount = computed(() => {
         {{ selectedIds.size }} test case{{ selectedIds.size !== 1 ? 's' : '' }} selected
       </span>
       <div class="flex gap-2">
-        <UButton size="xs" variant="soft" color="error" icon="i-lucide-trash-2">
+        <UButton size="xs" variant="soft" color="error" icon="i-lucide-trash-2" @click="handleBulkDelete">
           Delete Selected
         </UButton>
         <UButton size="xs" variant="ghost" color="neutral" @click="selectedIds.clear()">

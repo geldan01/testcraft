@@ -185,7 +185,7 @@ async function handleSubmit() {
       </div>
       <div class="relative flex justify-center text-xs uppercase">
         <span class="bg-default px-2 text-gray-500 dark:text-gray-400">
-          Or sign up with
+          Coming soon
         </span>
       </div>
     </div>
@@ -193,6 +193,7 @@ async function handleSubmit() {
     <!-- OAuth buttons -->
     <div class="grid grid-cols-2 gap-3">
       <UButton
+        disabled
         variant="outline"
         color="neutral"
         data-testid="register-oauth-google"
@@ -202,6 +203,7 @@ async function handleSubmit() {
         Google
       </UButton>
       <UButton
+        disabled
         variant="outline"
         color="neutral"
         data-testid="register-oauth-facebook"

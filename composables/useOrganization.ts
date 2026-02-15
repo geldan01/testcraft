@@ -9,6 +9,7 @@ import type {
 import { useOrganizationStore } from '~/stores/organization'
 
 export const useOrganization = () => {
+  const toast = useToast()
   const orgStore = useOrganizationStore()
 
   const organizations = computed(() => orgStore.organizations)
@@ -40,7 +41,9 @@ export const useOrganization = () => {
       })
       await orgStore.fetchOrganizations()
       return org
-    } catch {
+    } catch (err: unknown) {
+      const message = (err as { data?: { message?: string } })?.data?.message ?? 'Failed to create organization'
+      toast.add({ title: message, color: 'error' })
       return null
     }
   }
@@ -53,7 +56,9 @@ export const useOrganization = () => {
       })
       await orgStore.fetchOrganizations()
       return org
-    } catch {
+    } catch (err: unknown) {
+      const message = (err as { data?: { message?: string } })?.data?.message ?? 'Failed to update organization'
+      toast.add({ title: message, color: 'error' })
       return null
     }
   }
@@ -63,7 +68,9 @@ export const useOrganization = () => {
       await $fetch(`/api/organizations/${orgId}`, { method: 'DELETE' as 'GET' })
       await orgStore.fetchOrganizations()
       return true
-    } catch {
+    } catch (err: unknown) {
+      const message = (err as { data?: { message?: string } })?.data?.message ?? 'Failed to delete organization'
+      toast.add({ title: message, color: 'error' })
       return false
     }
   }
@@ -82,7 +89,9 @@ export const useOrganization = () => {
         method: 'POST',
         body: data,
       })
-    } catch {
+    } catch (err: unknown) {
+      const message = (err as { data?: { message?: string } })?.data?.message ?? 'Failed to invite member'
+      toast.add({ title: message, color: 'error' })
       return null
     }
   }
@@ -93,7 +102,9 @@ export const useOrganization = () => {
         method: 'DELETE',
       })
       return true
-    } catch {
+    } catch (err: unknown) {
+      const message = (err as { data?: { message?: string } })?.data?.message ?? 'Failed to remove member'
+      toast.add({ title: message, color: 'error' })
       return false
     }
   }
@@ -111,7 +122,9 @@ export const useOrganization = () => {
           body: { role },
         },
       )
-    } catch {
+    } catch (err: unknown) {
+      const message = (err as { data?: { message?: string } })?.data?.message ?? 'Failed to update member role'
+      toast.add({ title: message, color: 'error' })
       return null
     }
   }
@@ -137,7 +150,9 @@ export const useOrganization = () => {
           body: { allowed },
         },
       )
-    } catch {
+    } catch (err: unknown) {
+      const message = (err as { data?: { message?: string } })?.data?.message ?? 'Failed to update permission'
+      toast.add({ title: message, color: 'error' })
       return null
     }
   }

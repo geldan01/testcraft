@@ -44,7 +44,11 @@ export default defineEventHandler(async (event) => {
     },
   }
 
+  const validStatuses = ['NOT_RUN', 'IN_PROGRESS', 'PASS', 'FAIL', 'BLOCKED', 'SKIPPED']
   if (query.status && typeof query.status === 'string') {
+    if (!validStatuses.includes(query.status)) {
+      throw createError({ statusCode: 400, statusMessage: `Invalid status filter. Must be one of: ${validStatuses.join(', ')}` })
+    }
     where.status = query.status as Prisma.EnumTestRunStatusFilter['equals']
   }
 

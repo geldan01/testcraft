@@ -409,8 +409,8 @@ test.describe('Test Runs - Empty State with Active Filters', () => {
     const runsPage = new TestRunsPage(page)
     await runsPage.goto('project-1')
 
-    // Table should be visible with runs
-    await expect(page.getByText('Login with valid credentials')).toBeVisible()
+    // Table should be visible with runs (use .first() since multiple runs share this test case name)
+    await expect(page.getByText('Login with valid credentials').first()).toBeVisible()
 
     // Now set the filter to return empty results
     returnEmpty = true
@@ -449,7 +449,7 @@ test.describe('Test Runs - Test Case Filter Banner', () => {
 
     // Filter banner should be visible
     await expect(page.getByText('Filtered by test case:')).toBeVisible()
-    await expect(page.getByText('Login with valid credentials')).toBeVisible()
+    await expect(page.getByText('Login with valid credentials').first()).toBeVisible()
   })
 
   test('clear filter button in banner removes the testCaseId filter', async ({ page }) => {

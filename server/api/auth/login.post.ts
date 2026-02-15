@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import bcrypt from 'bcryptjs'
 import { prisma } from '~/server/utils/db'
-import { generateToken, userSelectFields } from '~/server/utils/auth'
+import { generateToken } from '~/server/utils/auth'
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -9,6 +9,8 @@ const loginSchema = z.object({
 })
 
 export default defineEventHandler(async (event) => {
+  rateLimit(event, { max: 10, windowSeconds: 60, key: 'auth-login' })
+
   const body = await readBody(event)
 
   const result = loginSchema.safeParse(body)
@@ -54,14 +56,11 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  // Get user without passwordHash
-  const user = await prisma.user.findUnique({
-    where: { id: userWithPassword.id },
-    select: userSelectFields,
-  })
+  // Strip passwordHash from the user object
+  const { passwordHash: _, ...user } = userWithPassword
 
   // Generate JWT
-  const token = generateToken(userWithPassword.id, userWithPassword.email)
+  const token = generateToken(user.id, user.email)
 
   return { user, token }
 })

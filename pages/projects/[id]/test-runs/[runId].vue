@@ -411,8 +411,8 @@ function formatRelativeTime(dateStr: string): string {
         </template>
 
         <div class="space-y-4">
-          <AttachmentFileUploader data-testid="test-run-detail-file-uploader" :test-run-id="run.id" :test-case-id="run.testCaseId" />
-          <AttachmentAttachmentList
+          <AttachmentFileUploader :test-run-id="run.id" :test-case-id="run.testCaseId" />
+          <AttachmentList
             v-if="run.attachments && run.attachments.length > 0"
             :attachments="run.attachments"
             :can-delete="true"

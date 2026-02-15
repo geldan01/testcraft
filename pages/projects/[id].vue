@@ -45,7 +45,11 @@ const activeTab = computed(() => {
   return 'overview'
 })
 
-const isOverview = computed(() => activeTab.value === 'overview')
+// Only show overview at the exact project page, not at child routes like /debug-queue
+const isOverview = computed(() => {
+  const projectPath = `/projects/${projectId.value}`
+  return route.path === projectPath || route.path === `${projectPath}/`
+})
 
 function navigateToSection(section: string) {
   if (section === 'overview') {

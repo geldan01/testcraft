@@ -5,6 +5,11 @@ definePageMeta({
   layout: false,
 })
 
+useSeoMeta({
+  title: 'TestCraft - Test Case Management',
+  description: 'Manage your test cases, plans, and runs with TestCraft.',
+})
+
 const authStore = useAuthStore()
 
 // Initialize auth from storage

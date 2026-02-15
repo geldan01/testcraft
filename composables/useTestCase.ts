@@ -10,6 +10,8 @@ import type {
 } from '~/types'
 
 export const useTestCase = () => {
+  const toast = useToast()
+
   async function getTestCases(
     projectId: string,
     filters?: TestCaseFilters,
@@ -46,7 +48,9 @@ export const useTestCase = () => {
         method: 'POST',
         body: data,
       })
-    } catch {
+    } catch (err: unknown) {
+      const message = (err as { data?: { message?: string } })?.data?.message ?? 'Failed to create test case'
+      toast.add({ title: message, color: 'error' })
       return null
     }
   }
@@ -57,7 +61,9 @@ export const useTestCase = () => {
         method: 'PUT',
         body: data,
       })
-    } catch {
+    } catch (err: unknown) {
+      const message = (err as { data?: { message?: string } })?.data?.message ?? 'Failed to update test case'
+      toast.add({ title: message, color: 'error' })
       return null
     }
   }
@@ -66,7 +72,9 @@ export const useTestCase = () => {
     try {
       await $fetch(`/api/test-cases/${caseId}`, { method: 'DELETE' })
       return true
-    } catch {
+    } catch (err: unknown) {
+      const message = (err as { data?: { message?: string } })?.data?.message ?? 'Failed to delete test case'
+      toast.add({ title: message, color: 'error' })
       return false
     }
   }
@@ -77,7 +85,9 @@ export const useTestCase = () => {
         method: 'PUT',
         body: comment ? { comment } : undefined,
       })
-    } catch {
+    } catch (err: unknown) {
+      const message = (err as { data?: { message?: string } })?.data?.message ?? 'Failed to toggle debug flag'
+      toast.add({ title: message, color: 'error' })
       return null
     }
   }
@@ -96,7 +106,9 @@ export const useTestCase = () => {
         method: 'POST',
         body: data,
       })
-    } catch {
+    } catch (err: unknown) {
+      const message = (err as { data?: { message?: string } })?.data?.message ?? 'Failed to add comment'
+      toast.add({ title: message, color: 'error' })
       return null
     }
   }
@@ -105,7 +117,9 @@ export const useTestCase = () => {
     try {
       await $fetch(`/api/comments/${commentId}`, { method: 'DELETE' })
       return true
-    } catch {
+    } catch (err: unknown) {
+      const message = (err as { data?: { message?: string } })?.data?.message ?? 'Failed to delete comment'
+      toast.add({ title: message, color: 'error' })
       return false
     }
   }

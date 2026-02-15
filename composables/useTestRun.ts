@@ -9,6 +9,8 @@ import type {
 } from '~/types'
 
 export const useTestRun = () => {
+  const toast = useToast()
+
   async function getRuns(
     projectId: string,
     filters?: TestRunFilters,
@@ -53,7 +55,9 @@ export const useTestRun = () => {
         method: 'POST',
         body: data,
       })
-    } catch {
+    } catch (err: unknown) {
+      const message = (err as { data?: { message?: string } })?.data?.message ?? 'Failed to start run'
+      toast.add({ title: message, color: 'error' })
       return null
     }
   }
@@ -67,7 +71,9 @@ export const useTestRun = () => {
         method: 'PUT',
         body: data,
       })
-    } catch {
+    } catch (err: unknown) {
+      const message = (err as { data?: { message?: string } })?.data?.message ?? 'Failed to complete run'
+      toast.add({ title: message, color: 'error' })
       return null
     }
   }
@@ -76,7 +82,9 @@ export const useTestRun = () => {
     try {
       await $fetch(`/api/test-runs/${runId}`, { method: 'DELETE' })
       return true
-    } catch {
+    } catch (err: unknown) {
+      const message = (err as { data?: { message?: string } })?.data?.message ?? 'Failed to delete run'
+      toast.add({ title: message, color: 'error' })
       return false
     }
   }
@@ -87,7 +95,9 @@ export const useTestRun = () => {
         method: 'POST',
         body: input,
       })
-    } catch {
+    } catch (err: unknown) {
+      const message = (err as { data?: { message?: string } })?.data?.message ?? 'Failed to start test run'
+      toast.add({ title: message, color: 'error' })
       return null
     }
   }
@@ -101,7 +111,9 @@ export const useTestRun = () => {
         method: 'PUT',
         body: input,
       })
-    } catch {
+    } catch (err: unknown) {
+      const message = (err as { data?: { message?: string } })?.data?.message ?? 'Failed to complete test run'
+      toast.add({ title: message, color: 'error' })
       return null
     }
   }

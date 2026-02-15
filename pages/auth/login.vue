@@ -11,6 +11,7 @@ const { login } = useAuth()
 
 const email = ref('')
 const password = ref('')
+const rememberMe = ref(true)
 const error = ref('')
 const loading = ref(false)
 
@@ -24,7 +25,7 @@ async function handleSubmit() {
 
   loading.value = true
   try {
-    await login({ email: email.value, password: password.value })
+    await login({ email: email.value, password: password.value }, rememberMe.value)
   } catch (err: unknown) {
     if (err && typeof err === 'object' && 'data' in err) {
       const fetchError = err as { data?: { message?: string; statusMessage?: string } }
@@ -85,15 +86,8 @@ async function handleSubmit() {
         />
       </UFormField>
 
-      <div class="flex items-center justify-between">
-        <UCheckbox data-testid="login-remember-checkbox" label="Remember me" />
-        <NuxtLink
-          to="/auth/forgot-password"
-          data-testid="login-forgot-password-link"
-          class="text-sm text-indigo-600 dark:text-indigo-400 hover:underline"
-        >
-          Forgot password?
-        </NuxtLink>
+      <div class="flex items-center">
+        <UCheckbox v-model="rememberMe" data-testid="login-remember-checkbox" label="Remember me" />
       </div>
 
       <UButton
@@ -114,7 +108,7 @@ async function handleSubmit() {
       </div>
       <div class="relative flex justify-center text-xs uppercase">
         <span class="bg-default px-2 text-gray-500 dark:text-gray-400">
-          Or continue with
+          Coming soon
         </span>
       </div>
     </div>
@@ -122,6 +116,7 @@ async function handleSubmit() {
     <!-- OAuth buttons -->
     <div class="grid grid-cols-2 gap-3">
       <UButton
+        disabled
         variant="outline"
         color="neutral"
         data-testid="login-oauth-google"
@@ -131,6 +126,7 @@ async function handleSubmit() {
         Google
       </UButton>
       <UButton
+        disabled
         variant="outline"
         color="neutral"
         data-testid="login-oauth-facebook"

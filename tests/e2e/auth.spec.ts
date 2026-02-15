@@ -47,10 +47,7 @@ test.describe('Authentication - Login Page', () => {
     // Remember me checkbox
     await expect(loginPage.rememberMeCheckbox).toBeVisible()
 
-    // Forgot password link
-    await expect(loginPage.forgotPasswordLink).toBeVisible()
-
-    // OAuth buttons
+    // OAuth buttons (disabled, with "Coming soon" notice)
     await expect(loginPage.googleOAuthButton).toBeVisible()
     await expect(loginPage.facebookOAuthButton).toBeVisible()
 

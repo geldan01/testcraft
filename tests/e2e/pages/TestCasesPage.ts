@@ -7,7 +7,7 @@ export class TestCasesPage {
 
   get heading(): Locator { return this.page.getByRole('heading', { name: 'Test Cases' }) }
   get createButton(): Locator { return this.page.getByTestId('test-cases-create-button') }
-  get searchInput(): Locator { return this.page.getByTestId('test-cases-search-input').getByRole('textbox') }
+  get searchInput(): Locator { return this.page.getByPlaceholder('Search test cases...') }
   get emptyState(): Locator { return this.page.getByTestId('test-cases-empty-state') }
   get emptyStateDescription(): Locator { return this.page.getByTestId('test-cases-empty-state-description') }
   get countText(): Locator { return this.page.getByTestId('test-cases-count') }

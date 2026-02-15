@@ -6,8 +6,10 @@ const props = defineProps<{
   size?: 'sm' | 'md' | 'lg'
 }>()
 
+type BadgeColor = 'success' | 'error' | 'warning' | 'neutral' | 'info'
+
 const statusConfig = computed(() => {
-  const configs: Record<TestRunStatus, { label: string; color: string; icon: string }> = {
+  const configs: Record<TestRunStatus, { label: string; color: BadgeColor; icon: string }> = {
     PASS: { label: 'Pass', color: 'success', icon: 'i-lucide-check-circle' },
     FAIL: { label: 'Fail', color: 'error', icon: 'i-lucide-x-circle' },
     BLOCKED: { label: 'Blocked', color: 'warning', icon: 'i-lucide-ban' },
@@ -21,7 +23,7 @@ const statusConfig = computed(() => {
 
 <template>
   <UBadge
-    :color="statusConfig.color as any"
+    :color="statusConfig.color"
     :size="size ?? 'sm'"
     variant="subtle"
     class="inline-flex items-center gap-1"

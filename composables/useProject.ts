@@ -2,6 +2,7 @@ import type { Project, CreateProjectInput, UpdateProjectInput } from '~/types'
 import { useProjectStore } from '~/stores/project'
 
 export const useProject = () => {
+  const toast = useToast()
   const projectStore = useProjectStore()
 
   const projects = computed(() => projectStore.projects)
@@ -30,7 +31,9 @@ export const useProject = () => {
         await projectStore.fetchProjects(data.organizationId)
       }
       return project
-    } catch {
+    } catch (err: unknown) {
+      const message = (err as { data?: { message?: string } })?.data?.message ?? 'Failed to create project'
+      toast.add({ title: message, color: 'error' })
       return null
     }
   }
@@ -41,7 +44,9 @@ export const useProject = () => {
         method: 'PUT',
         body: data,
       })
-    } catch {
+    } catch (err: unknown) {
+      const message = (err as { data?: { message?: string } })?.data?.message ?? 'Failed to update project'
+      toast.add({ title: message, color: 'error' })
       return null
     }
   }
@@ -50,7 +55,9 @@ export const useProject = () => {
     try {
       await $fetch(`/api/projects/${projectId}`, { method: 'DELETE' })
       return true
-    } catch {
+    } catch (err: unknown) {
+      const message = (err as { data?: { message?: string } })?.data?.message ?? 'Failed to delete project'
+      toast.add({ title: message, color: 'error' })
       return false
     }
   }

@@ -169,11 +169,11 @@ test.describe('Debug Queue - Table Display', () => {
     const debugQueue = new DebugQueuePage(page)
     await debugQueue.goto('project-1')
 
+    // Wait for the table to load (onMounted async data fetch)
+    await expect(debugQueue.testCaseLink('Login button not responding')).toBeVisible()
+
     // The dates should be formatted as "Mon DD, YYYY" (e.g., "Feb 13, 2026")
-    // We can not test exact dates since they depend on Date.now(), but we can verify
-    // that the date column cells are not empty (they won't show '--')
-    // The formatted date will contain a month abbreviation
-    const monthAbbreviations = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    // Verify that the date column cells exist (3 rows of debug cases)
     const dateTexts = page.locator('table tbody td:nth-child(3)')
     const count = await dateTexts.count()
     expect(count).toBe(3)
