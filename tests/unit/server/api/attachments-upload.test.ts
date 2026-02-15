@@ -68,6 +68,7 @@ const mockGetStorageProvider = vi.fn(() => ({
   upload: mockUpload,
   delete: vi.fn(),
   getFilePath: vi.fn(),
+  read: vi.fn(),
 }))
 const mockGetMaxFileSizeBytes = vi.fn()
 const mockIsAllowedMimeType = vi.fn()

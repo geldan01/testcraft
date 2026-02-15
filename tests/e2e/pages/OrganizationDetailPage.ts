@@ -5,7 +5,7 @@ import { TopBar } from '../components/TopBar'
 export class OrganizationDetailPage {
   constructor(public readonly page: Page) {}
 
-  async goto(orgId: string) { await this.page.goto(`/organizations/${orgId}`) }
+  async goto(orgId: string) { await this.page.goto(`/organizations/${orgId}`, { waitUntil: 'networkidle' }) }
 
   get sidebar(): Sidebar { return new Sidebar(this.page) }
   get topBar(): TopBar { return new TopBar(this.page) }

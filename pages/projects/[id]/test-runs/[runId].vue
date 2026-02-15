@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { TestRun, Comment, Attachment } from '~/types'
+import type { TestRun, Attachment } from '~/types'
 
 definePageMeta({
   middleware: 'auth',
@@ -76,6 +76,13 @@ async function handleDelete() {
     }
   } finally {
     deleting.value = false
+  }
+}
+
+function onAttachmentUploaded(attachment: Attachment) {
+  if (run.value) {
+    if (!run.value.attachments) run.value.attachments = []
+    run.value.attachments.unshift(attachment)
   }
 }
 
@@ -411,7 +418,10 @@ function formatRelativeTime(dateStr: string): string {
         </template>
 
         <div class="space-y-4">
-          <AttachmentFileUploader :test-run-id="run.id" :test-case-id="run.testCaseId" />
+          <AttachmentFileUploader
+            :test-run-id="run.id"
+            @uploaded="onAttachmentUploaded"
+          />
           <AttachmentList
             v-if="run.attachments && run.attachments.length > 0"
             :attachments="run.attachments"

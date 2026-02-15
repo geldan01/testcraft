@@ -21,10 +21,18 @@ export const userSelectFields = {
 } as const
 
 export async function getUserFromEvent(event: H3Event) {
+  // Try Authorization header first, then fall back to auth_token cookie
+  // (cookie fallback is needed for browser-initiated requests like <img src>)
   const authHeader = getHeader(event, 'authorization')
-  if (!authHeader?.startsWith('Bearer ')) return null
+  let token: string | undefined
 
-  const token = authHeader.slice(7)
+  if (authHeader?.startsWith('Bearer ')) {
+    token = authHeader.slice(7)
+  } else {
+    token = getCookie(event, 'auth_token')
+  }
+
+  if (!token) return null
   try {
     const config = useRuntimeConfig()
     const payload = jwt.verify(token, config.jwtSecret) as JwtPayload

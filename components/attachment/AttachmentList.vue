@@ -16,6 +16,7 @@ const emit = defineEmits<{
 }>()
 
 const { deleteAttachment } = useAttachment()
+const downloadUrl = (id: string) => getAttachmentDownloadUrl(id)
 
 const confirmDeleteId = ref<string | null>(null)
 const deleting = ref(false)
@@ -80,7 +81,7 @@ async function handleDelete(id: string) {
         >
           <img
             v-if="isImageType(attachment.fileType)"
-            :src="attachment.fileUrl"
+            :src="downloadUrl(attachment.id)"
             :alt="attachment.fileName"
             class="w-full h-full object-cover cursor-pointer"
             @click="openPreview(attachment)"
@@ -113,7 +114,7 @@ async function handleDelete(id: string) {
             aria-label="Preview"
             @click="openPreview(attachment)"
           />
-          <a :href="attachment.fileUrl" target="_blank" rel="noopener noreferrer">
+          <a :href="downloadUrl(attachment.id)" target="_blank" rel="noopener noreferrer">
             <UButton
               icon="i-lucide-download"
               variant="ghost"

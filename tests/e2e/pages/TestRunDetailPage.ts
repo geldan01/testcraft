@@ -4,7 +4,7 @@ export class TestRunDetailPage {
   constructor(public readonly page: Page) {}
 
   async goto(projectId: string, runId: string) {
-    await this.page.goto(`/projects/${projectId}/test-runs/${runId}`)
+    await this.page.goto(`/projects/${projectId}/test-runs/${runId}`, { waitUntil: 'networkidle' })
   }
 
   // Header

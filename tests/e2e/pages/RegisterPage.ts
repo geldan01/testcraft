@@ -4,7 +4,7 @@ export class RegisterPage {
   readonly path = '/auth/register'
   constructor(public readonly page: Page) {}
 
-  async goto() { await this.page.goto(this.path) }
+  async goto() { await this.page.goto(this.path, { waitUntil: 'networkidle' }) }
 
   get heading(): Locator { return this.page.getByRole('heading', { name: 'Create your account' }) }
   get subtitle(): Locator { return this.page.getByTestId('register-subtitle') }

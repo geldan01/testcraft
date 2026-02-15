@@ -6,7 +6,7 @@ export class OrganizationsPage {
   readonly path = '/organizations'
   constructor(public readonly page: Page) {}
 
-  async goto() { await this.page.goto(this.path) }
+  async goto() { await this.page.goto(this.path, { waitUntil: 'networkidle' }) }
 
   get sidebar(): Sidebar { return new Sidebar(this.page) }
   get topBar(): TopBar { return new TopBar(this.page) }

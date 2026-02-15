@@ -4,7 +4,7 @@ export class DebugQueuePage {
   constructor(public readonly page: Page) {}
 
   async goto(projectId: string) {
-    await this.page.goto(`/projects/${projectId}/debug-queue`)
+    await this.page.goto(`/projects/${projectId}/debug-queue`, { waitUntil: 'networkidle' })
   }
 
   // Header

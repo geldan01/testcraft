@@ -215,7 +215,16 @@ describe('Storage Utility - getStorageProvider', () => {
     process.env.STORAGE_PROVIDER = 'azure-blob'
     const { getStorageProvider } = await import('~/server/utils/storage')
 
-    expect(() => getStorageProvider()).toThrow('Unknown storage provider: azure-blob')
+    expect(() => getStorageProvider()).toThrow('Supported: local, s3')
+  })
+
+  it('LocalStorageProvider exposes a read() method', async () => {
+    vi.resetModules()
+    delete process.env.STORAGE_PROVIDER
+    const { getStorageProvider } = await import('~/server/utils/storage')
+    const provider = getStorageProvider()
+
+    expect(typeof provider.read).toBe('function')
   })
 
   it('LocalStorageProvider.getFilePath strips /uploads/ prefix', async () => {
@@ -228,5 +237,53 @@ describe('Storage Utility - getStorageProvider', () => {
     const filePath = provider.getFilePath('/uploads/abc-123.png')
     expect(filePath).toContain('abc-123.png')
     expect(filePath).not.toContain('/uploads/uploads/')
+  })
+})
+
+describe('Storage Utility - S3StorageProvider via factory', () => {
+  afterEach(() => {
+    delete process.env.STORAGE_PROVIDER
+    delete process.env.S3_BUCKET
+    delete process.env.S3_REGION
+    delete process.env.S3_ENDPOINT
+    delete process.env.S3_ACCESS_KEY_ID
+    delete process.env.S3_SECRET_ACCESS_KEY
+  })
+
+  it('returns an S3StorageProvider when STORAGE_PROVIDER is "s3"', async () => {
+    vi.resetModules()
+    process.env.STORAGE_PROVIDER = 's3'
+    process.env.S3_BUCKET = 'test-bucket'
+    process.env.S3_ACCESS_KEY_ID = 'test-key'
+    process.env.S3_SECRET_ACCESS_KEY = 'test-secret'
+    const { getStorageProvider } = await import('~/server/utils/storage')
+    const provider = getStorageProvider()
+
+    expect(provider).toBeDefined()
+    expect(typeof provider.upload).toBe('function')
+    expect(typeof provider.delete).toBe('function')
+    expect(typeof provider.read).toBe('function')
+    expect(typeof provider.getFilePath).toBe('function')
+  })
+
+  it('throws when S3_BUCKET is not set', async () => {
+    vi.resetModules()
+    process.env.STORAGE_PROVIDER = 's3'
+    delete process.env.S3_BUCKET
+    const { getStorageProvider } = await import('~/server/utils/storage')
+
+    expect(() => getStorageProvider()).toThrow('S3_BUCKET environment variable is required')
+  })
+
+  it('S3StorageProvider.getFilePath returns the object key', async () => {
+    vi.resetModules()
+    process.env.STORAGE_PROVIDER = 's3'
+    process.env.S3_BUCKET = 'test-bucket'
+    process.env.S3_ACCESS_KEY_ID = 'test-key'
+    process.env.S3_SECRET_ACCESS_KEY = 'test-secret'
+    const { getStorageProvider } = await import('~/server/utils/storage')
+    const provider = getStorageProvider()
+
+    expect(provider.getFilePath('/uploads/abc-123.png')).toBe('uploads/abc-123.png')
   })
 })

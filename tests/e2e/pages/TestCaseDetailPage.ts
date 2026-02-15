@@ -6,7 +6,7 @@ export class TestCaseDetailPage {
   constructor(public readonly page: Page) {}
 
   async goto(projectId: string, caseId: string) {
-    await this.page.goto(`/projects/${projectId}/test-cases/${caseId}`)
+    await this.page.goto(`/projects/${projectId}/test-cases/${caseId}`, { waitUntil: 'networkidle' })
   }
 
   heading(name: string): Locator { return this.page.getByRole('heading', { name }) }

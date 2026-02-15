@@ -4,7 +4,7 @@ export class SettingsPage {
   readonly path = '/settings'
   constructor(public readonly page: Page) {}
 
-  async goto() { await this.page.goto(this.path) }
+  async goto() { await this.page.goto(this.path, { waitUntil: 'networkidle' }) }
 
   // Headings - keep getByRole for accessibility validation
   get heading(): Locator { return this.page.getByRole('heading', { name: 'Settings' }) }

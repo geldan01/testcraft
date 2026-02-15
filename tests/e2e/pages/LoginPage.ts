@@ -4,7 +4,7 @@ export class LoginPage {
   readonly path = '/auth/login'
   constructor(public readonly page: Page) {}
 
-  async goto() { await this.page.goto(this.path) }
+  async goto() { await this.page.goto(this.path, { waitUntil: 'networkidle' }) }
 
   get heading(): Locator { return this.page.getByRole('heading', { name: 'Sign in to your account' }) }
   get subtitle(): Locator { return this.page.getByTestId('login-subtitle') }

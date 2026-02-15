@@ -1,5 +1,40 @@
 import type { Page } from '@playwright/test'
 
+/**
+ * Strip SSR-hydrated state so client-side API mocks control all data.
+ *
+ * When the dev server has SSR enabled (e.g. reusing an existing server locally),
+ * the server pre-populates Pinia stores with real DB data and renders HTML
+ * with that data. This causes Vue hydration mismatches when client-side mocks
+ * return different data, leaving stale server-rendered DOM elements.
+ *
+ * This helper:
+ * 1. Strips the Pinia state from the __NUXT__ payload
+ * 2. Sets serverRendered to false so Vue skips hydration and renders fresh
+ *
+ * Call this before page.goto() in any test that relies on API mocking.
+ */
+export async function clearServerState(page: Page) {
+  await page.addInitScript(() => {
+    let _nuxtValue: any
+    Object.defineProperty(window, '__NUXT__', {
+      get() { return _nuxtValue },
+      set(val) {
+        if (val && typeof val === 'object') {
+          // Remove server-hydrated Pinia state
+          if ('pinia' in val) delete val.pinia
+          // Tell Nuxt this wasn't server-rendered so Vue renders fresh
+          // instead of trying to hydrate the server-rendered DOM
+          val.serverRendered = false
+        }
+        _nuxtValue = val
+      },
+      configurable: true,
+      enumerable: true,
+    })
+  })
+}
+
 export async function mockProjectApi(page: Page, projectId: string, project: object) {
   await page.route(`**/api/projects/${projectId}`, async (route) => {
     await route.fulfill({
