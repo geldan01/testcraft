@@ -33,7 +33,7 @@ COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/package.json ./package.json
 
 # Prisma CLI for running migrations in production
-RUN npm install --no-save prisma
+RUN npm install --no-save prisma @prisma/config effect
 
 # Upload directory for local storage mode
 RUN mkdir -p /app/data/uploads && chown -R nuxt:nuxt /app/data
