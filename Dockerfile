@@ -26,13 +26,11 @@ RUN addgroup --system --gid 1001 nuxt && \
 # Nuxt production output
 COPY --from=builder /app/.output ./.output
 
-# Prisma client (generated native binary) and schema for migrations
+# Prisma generated client (native binary) and schema
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=builder /app/prisma ./prisma
 
-# Prisma CLI for running migrations in production
-# Install BEFORE copying package.json to avoid resolving all app dependencies
+# Prisma CLI + all dependencies for running migrations
 RUN npm install --no-save prisma
 
 # package.json needed for seed config
