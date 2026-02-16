@@ -30,10 +30,13 @@ COPY --from=builder /app/.output ./.output
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/package.json ./package.json
 
 # Prisma CLI for running migrations in production
-RUN npm install --no-save prisma @prisma/config effect
+# Install BEFORE copying package.json to avoid resolving all app dependencies
+RUN npm install --no-save prisma
+
+# package.json needed for seed config
+COPY --from=builder /app/package.json ./package.json
 
 # Upload directory for local storage mode
 RUN mkdir -p /app/data/uploads && chown -R nuxt:nuxt /app/data
