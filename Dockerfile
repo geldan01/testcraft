@@ -31,7 +31,7 @@ COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/prisma ./prisma
 
 # Prisma CLI + all dependencies for running migrations
-RUN npm install --no-save prisma
+RUN npm install --no-save prisma@^6
 
 # package.json needed for seed config
 COPY --from=builder /app/package.json ./package.json
