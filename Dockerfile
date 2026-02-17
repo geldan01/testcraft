@@ -26,6 +26,11 @@ RUN addgroup --system --gid 1001 nuxt && \
 # Nuxt production output
 COPY --from=builder /app/.output ./.output
 
+# Workaround: Nitro 2.12+ readAsset() resolves public asset paths relative to
+# server/chunks/nitro/ (via import.meta.url) instead of server/. This symlink
+# ensures /_nuxt/* static files are found at the resolved path.
+RUN ln -s ../../public .output/server/chunks/public
+
 # Prisma generated client (native binary) and schema
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/prisma ./prisma
