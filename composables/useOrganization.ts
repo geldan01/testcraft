@@ -129,11 +129,17 @@ export const useOrganization = () => {
     }
   }
 
-  async function getRbacPermissions(orgId: string): Promise<RbacPermission[]> {
+  async function getRbacPermissions(orgId: string): Promise<{ data: RbacPermission[]; accessDenied: boolean }> {
     try {
-      return await $fetch<RbacPermission[]>(`/api/organizations/${orgId}/rbac`)
-    } catch {
-      return []
+      const data = await $fetch<RbacPermission[]>(`/api/organizations/${orgId}/rbac`)
+      return { data, accessDenied: false }
+    } catch (err: unknown) {
+      const status = (err as { response?: { status?: number } })?.response?.status
+        ?? (err as { statusCode?: number })?.statusCode
+      if (status === 403) {
+        return { data: [], accessDenied: true }
+      }
+      return { data: [], accessDenied: false }
     }
   }
 

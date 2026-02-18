@@ -9,6 +9,7 @@ const emit = defineEmits<{
 
 const { currentUser, userInitials, logout } = useAuth()
 const { currentProject } = useProject()
+const { currentOrg } = useOrganization()
 const route = useRoute()
 
 const breadcrumbs = computed(() => {
@@ -16,14 +17,25 @@ const breadcrumbs = computed(() => {
   const items: Array<{ label: string; to?: string; icon?: string }> = []
 
   let currentPath = ''
-  for (const segment of segments) {
+  for (let i = 0; i < segments.length; i++) {
+    const segment = segments[i]
     currentPath += `/${segment}`
 
-    // Convert path segments to readable labels
-    const label = segment
-      .split('-')
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ')
+    // Resolve entity names for ID segments
+    const prevSegment = i > 0 ? segments[i - 1] : null
+    let label: string
+
+    if (prevSegment === 'organizations' && currentOrg.value?.id === segment) {
+      label = currentOrg.value.name
+    } else if (prevSegment === 'projects' && currentProject.value?.id === segment) {
+      label = currentProject.value.name
+    } else {
+      // Default: capitalize path segment
+      label = segment
+        .split('-')
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ')
+    }
 
     // Redirect /projects breadcrumb to the project's parent organization
     let to: string | undefined = currentPath

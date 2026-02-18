@@ -109,6 +109,10 @@ Uses CSS-first configuration (`@import` and `@theme` in CSS). There is no `tailw
 ### No Linter Configured
 No ESLint or Prettier configuration exists. Follow existing code style and patterns.
 
+## Git Workflow
+
+**IMPORTANT:** When asked to make code changes, you MUST create a new feature branch if the current branch is `main`. Never commit directly to `main`. Use a descriptive branch name (e.g., `fix/rbac-matrix-ui`, `feat/dark-mode-toggle`). Only proceed on the current branch if it is already a non-main branch.
+
 ## Environment Variables
 
 See `.env.example`. Key variables:

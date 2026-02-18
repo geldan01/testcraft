@@ -11,6 +11,11 @@ export default defineNuxtConfig({
     '@vueuse/nuxt',
   ],
 
+  colorMode: {
+    preference: 'light',
+    fallback: 'light',
+  },
+
   build: {
     transpile: ['echarts', 'vue-echarts', 'resize-detector'],
   },

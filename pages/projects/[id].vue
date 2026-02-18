@@ -91,6 +91,7 @@ function navigateToSection(section: string) {
           variant="outline"
           color="neutral"
           size="sm"
+          @click="navigateTo(`/projects/${projectId}/settings`)"
         >
           Project Settings
         </UButton>

@@ -9,11 +9,14 @@ const route = useRoute()
 const projectId = computed(() => route.params.id as string)
 const suiteId = computed(() => route.params.suiteId as string)
 
-const { getTestSuite, linkTestCase, unlinkTestCase } = useTestSuite()
+const { getTestSuite, updateTestSuite, deleteTestSuite, linkTestCase, unlinkTestCase } = useTestSuite()
 const { getTestCases } = useTestCase()
 
 const suite = ref<TestSuite | null>(null)
 const loading = ref(true)
+const editing = ref(false)
+const editName = ref('')
+const editDescription = ref('')
 
 // Add test cases modal
 const showAddCasesModal = ref(false)
@@ -29,6 +32,8 @@ async function loadSuite() {
     suite.value = await getTestSuite(suiteId.value)
     if (suite.value) {
       useSeoMeta({ title: suite.value.name })
+      editName.value = suite.value.name
+      editDescription.value = suite.value.description ?? ''
     }
   } finally {
     loading.value = false
@@ -93,6 +98,36 @@ async function handleUnlinkCase(caseId: string) {
     await loadSuite()
   }
 }
+
+async function saveEdit() {
+  if (!editName.value.trim()) return
+
+  const updated = await updateTestSuite(suiteId.value, {
+    name: editName.value,
+    description: editDescription.value || undefined,
+  })
+
+  if (updated) {
+    editing.value = false
+    await loadSuite()
+  }
+}
+
+// Delete
+const showDeleteModal = ref(false)
+const deleting = ref(false)
+
+async function handleDelete() {
+  deleting.value = true
+  try {
+    const success = await deleteTestSuite(suiteId.value)
+    if (success) {
+      await navigateTo(`/projects/${projectId.value}/test-suites`)
+    }
+  } finally {
+    deleting.value = false
+  }
+}
 </script>
 
 <template>
@@ -106,7 +141,7 @@ async function handleUnlinkCase(caseId: string) {
     <template v-else-if="suite">
       <!-- Header -->
       <div class="flex items-start justify-between">
-        <div class="space-y-2">
+        <div v-if="!editing" class="space-y-2">
           <div class="flex items-center gap-3">
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
               {{ suite.name }}
@@ -123,12 +158,44 @@ async function handleUnlinkCase(caseId: string) {
             {{ new Date(suite.createdAt).toLocaleDateString() }}
           </p>
         </div>
-        <div class="flex gap-2">
-          <UButton data-testid="test-suite-detail-edit-button" icon="i-lucide-pencil" variant="outline" color="neutral" size="sm">
+
+        <!-- Edit form -->
+        <div v-else class="space-y-3 flex-1 max-w-lg">
+          <UFormField label="Suite Name" required>
+            <UInput v-model="editName" class="w-full" />
+          </UFormField>
+          <UFormField label="Description">
+            <UTextarea v-model="editDescription" :rows="2" class="w-full" />
+          </UFormField>
+          <div class="flex gap-2">
+            <UButton size="sm" @click="saveEdit">Save</UButton>
+            <UButton size="sm" variant="ghost" color="neutral" @click="editing = false">Cancel</UButton>
+          </div>
+        </div>
+
+        <div v-if="!editing" class="flex gap-2">
+          <UButton
+            data-testid="test-suite-detail-edit-button"
+            icon="i-lucide-pencil"
+            variant="outline"
+            color="neutral"
+            size="sm"
+            @click="editing = true"
+          >
             Edit
           </UButton>
           <UButton data-testid="test-suite-detail-add-cases-button" icon="i-lucide-plus" size="sm" @click="openAddCasesModal">
             Add Test Cases
+          </UButton>
+          <UButton
+            data-testid="test-suite-detail-delete-button"
+            icon="i-lucide-trash-2"
+            variant="outline"
+            color="error"
+            size="sm"
+            @click="showDeleteModal = true"
+          >
+            Delete
           </UButton>
         </div>
       </div>
@@ -204,6 +271,28 @@ async function handleUnlinkCase(caseId: string) {
         Back to Test Suites
       </UButton>
     </div>
+
+    <!-- Delete Confirmation Modal -->
+    <UModal
+      v-model:open="showDeleteModal"
+      title="Delete Test Suite"
+      :description="`Are you sure you want to delete '${suite?.name}'? Linked test cases will NOT be deleted, only unlinked from this suite.`"
+      data-testid="delete-test-suite-modal"
+    >
+      <template #footer>
+        <div class="flex justify-end gap-3">
+          <UButton variant="ghost" color="neutral" @click="showDeleteModal = false">Cancel</UButton>
+          <UButton
+            data-testid="delete-test-suite-confirm-button"
+            color="error"
+            :loading="deleting"
+            @click="handleDelete"
+          >
+            Delete Suite
+          </UButton>
+        </div>
+      </template>
+    </UModal>
 
     <!-- Add Test Cases Modal -->
     <UModal

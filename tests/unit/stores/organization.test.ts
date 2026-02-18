@@ -2,11 +2,11 @@
  * Unit tests for the organization Pinia store.
  *
  * Tests state management, getters (currentOrgId, currentOrgName, hasOrganizations),
- * and actions (switchOrganization, restoreCurrentOrg, clearOrganizations).
+ * and actions (switchOrganization, restoreOrgFromSaved, clearOrganizations).
  *
  * Network-dependent actions (fetchOrganizations) are not tested here.
  * Instead we verify that state is set correctly given certain inputs,
- * without actually calling $fetch.
+ * without actually calling $fetch. Org persistence uses useCookie (works on SSR + client).
  */
 
 import { describe, it, expect, beforeEach } from 'vitest'
@@ -61,7 +61,7 @@ function switchOrganization(
   return { state, persistedOrgId: null }
 }
 
-function restoreCurrentOrg(
+function restoreOrgFromSaved(
   state: OrganizationState,
   savedOrgId: string | null,
 ): OrganizationState {
@@ -208,8 +208,8 @@ describe('Organization Store', () => {
     })
   })
 
-  describe('restoreCurrentOrg action', () => {
-    it('restores org from localStorage when matching org exists', () => {
+  describe('restoreOrgFromSaved action', () => {
+    it('restores org from saved cookie when matching org exists', () => {
       const org1 = createMockOrganization({ id: 'org-1', name: 'Org One' })
       const org2 = createMockOrganization({ id: 'org-2', name: 'Org Two' })
       const state: OrganizationState = {
@@ -218,7 +218,7 @@ describe('Organization Store', () => {
         loading: false,
       }
 
-      const result = restoreCurrentOrg(state, 'org-2')
+      const result = restoreOrgFromSaved(state, 'org-2')
       expect(result.currentOrganization).toEqual(org2)
     })
 
@@ -229,7 +229,7 @@ describe('Organization Store', () => {
         loading: false,
       }
 
-      const result = restoreCurrentOrg(state, null)
+      const result = restoreOrgFromSaved(state, null)
       expect(result.currentOrganization).toBeNull()
     })
 
@@ -241,14 +241,14 @@ describe('Organization Store', () => {
         loading: false,
       }
 
-      const result = restoreCurrentOrg(state, 'non-existent-org')
+      const result = restoreOrgFromSaved(state, 'non-existent-org')
       expect(result.currentOrganization).toBeNull()
     })
 
     it('does nothing when organizations array is empty', () => {
       const state = createOrganizationState()
 
-      const result = restoreCurrentOrg(state, 'org-1')
+      const result = restoreOrgFromSaved(state, 'org-1')
       expect(result.currentOrganization).toBeNull()
     })
   })
@@ -264,7 +264,7 @@ describe('Organization Store', () => {
       expect(state.currentOrganization).toBeNull()
     })
 
-    it('removes from localStorage', () => {
+    it('clears cookie', () => {
       const mockLocalStorage = new Map<string, string>()
       mockLocalStorage.set('current_org_id', 'org-1')
 
@@ -274,8 +274,8 @@ describe('Organization Store', () => {
     })
   })
 
-  describe('localStorage persistence', () => {
-    it('saves org id to localStorage on switchOrganization', () => {
+  describe('Cookie persistence', () => {
+    it('saves org id to cookie on switchOrganization', () => {
       const mockLocalStorage = new Map<string, string>()
       const org = createMockOrganization({ id: 'org-42' })
       const state: OrganizationState = {
@@ -292,7 +292,7 @@ describe('Organization Store', () => {
       expect(mockLocalStorage.get('current_org_id')).toBe('org-42')
     })
 
-    it('reads org id from localStorage on restoreCurrentOrg', () => {
+    it('reads org id from cookie on restoreOrgFromSaved', () => {
       const mockLocalStorage = new Map<string, string>()
       mockLocalStorage.set('current_org_id', 'org-99')
 
@@ -304,15 +304,15 @@ describe('Organization Store', () => {
       }
 
       const savedOrgId = mockLocalStorage.get('current_org_id') ?? null
-      const result = restoreCurrentOrg(state, savedOrgId)
+      const result = restoreOrgFromSaved(state, savedOrgId)
       expect(result.currentOrganization?.name).toBe('Restored Org')
     })
 
-    it('handles missing org id in localStorage gracefully', () => {
+    it('handles missing org id in cookie gracefully', () => {
       const mockLocalStorage = new Map<string, string>()
 
       const savedOrgId = mockLocalStorage.get('current_org_id') ?? null
-      const result = restoreCurrentOrg(createOrganizationState(), savedOrgId)
+      const result = restoreOrgFromSaved(createOrganizationState(), savedOrgId)
       expect(result.currentOrganization).toBeNull()
     })
   })
@@ -345,7 +345,7 @@ describe('Organization Store', () => {
       }
 
       // Restore to org-1
-      state = restoreCurrentOrg(state, 'org-1')
+      state = restoreOrgFromSaved(state, 'org-1')
       expect(currentOrgName(state)).toBe('Org One')
 
       // Switch to org-2

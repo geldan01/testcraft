@@ -20,6 +20,13 @@ if (currentOrg.value?.id) {
 
 const firstProjectId = computed(() => projects.value?.[0]?.id)
 
+// Re-fetch projects when org changes (e.g. org switcher)
+watch(() => currentOrg.value?.id, async (newOrgId) => {
+  if (newOrgId) {
+    await fetchProjects(newOrgId)
+  }
+})
+
 function navigateToNewTestCase() {
   if (firstProjectId.value) {
     navigateTo(`/projects/${firstProjectId.value}/test-cases/new`)
@@ -44,40 +51,32 @@ function navigateToReports() {
   }
 }
 
-// Fetch dashboard stats from project stats API
+// Fetch dashboard stats — useAsyncData ensures SSR result transfers to client
 const defaultStats: DashboardStats = { totalTestCases: 0, passRate: 0, recentRuns: 0, debugFlagged: 0 }
-const stats = ref<DashboardStats>({ ...defaultStats })
 
-watch(firstProjectId, async (projectId) => {
-  if (!projectId) {
-    stats.value = { ...defaultStats }
-    return
-  }
-  try {
-    stats.value = await $fetch<DashboardStats>(`/api/projects/${projectId}/stats`)
-  } catch {
-    stats.value = { ...defaultStats }
-  }
-}, { immediate: true })
+const { data: statsData, refresh: refreshStats } = await useAsyncData(
+  'dashboard-stats',
+  () => {
+    if (!firstProjectId.value) return Promise.resolve(defaultStats)
+    return $fetch<DashboardStats>(`/api/projects/${firstProjectId.value}/stats`)
+  },
+  { default: () => ({ ...defaultStats }) },
+)
+
+const stats = computed(() => statsData.value ?? defaultStats)
+
+// Watch for subsequent changes (e.g. org/project switch)
+watch(firstProjectId, () => refreshStats())
 
 // Fetch recent activity
-const activityLoading = ref(false)
-const recentActivity = ref<ActivityLog[]>([])
+const { data: activityData, status: activityStatus } = await useAsyncData(
+  'dashboard-activity',
+  () => $fetch<{ data: ActivityLog[] }>('/api/activity', { query: { limit: 10 } }),
+  { default: () => ({ data: [] as ActivityLog[] }) },
+)
 
-async function fetchActivity() {
-  activityLoading.value = true
-  try {
-    const result = await $fetch<{ data: ActivityLog[] }>('/api/activity', {
-      query: { limit: 10 },
-    })
-    recentActivity.value = result.data
-  } catch {
-    recentActivity.value = []
-  } finally {
-    activityLoading.value = false
-  }
-}
-await fetchActivity()
+const recentActivity = computed(() => activityData.value?.data ?? [])
+const activityLoading = computed(() => activityStatus.value === 'pending')
 
 const statCards = computed(() => [
   {
