@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Organization, OrganizationMember, RbacPermission, Project, CreateProjectInput } from '~/types'
+import type { Organization, OrganizationMember, RbacPermission, Project, CreateProjectInput, OrganizationRole } from '~/types'
 
 definePageMeta({
   middleware: 'auth',
@@ -8,13 +8,14 @@ definePageMeta({
 const route = useRoute()
 const orgId = computed(() => route.params.id as string)
 
-const { getOrganization, getMembers, getRbacPermissions, switchOrg } = useOrganization()
+const { getOrganization, getMembers, getRbacPermissions, updateRbacPermission, switchOrg } = useOrganization()
 const { fetchProjects, projects, createProject } = useProject()
 
 // Fetch data
 const org = ref<Organization | null>(null)
 const members = ref<OrganizationMember[]>([])
 const permissions = ref<RbacPermission[]>([])
+const rbacAccessDenied = ref(false)
 const loading = ref(true)
 
 async function loadData() {
@@ -28,6 +29,7 @@ async function loadData() {
     org.value = orgData
     members.value = membersData
     permissions.value = rbacResult.data
+    rbacAccessDenied.value = rbacResult.accessDenied
 
     if (orgData) {
       switchOrg(orgData.id)
@@ -100,6 +102,43 @@ async function handleCreateProject() {
     createProjectError.value = 'An error occurred. Please try again.'
   } finally {
     creatingProject.value = false
+  }
+}
+
+// RBAC matrix helpers
+const RESOURCE_LABELS: Record<string, string> = {
+  TEST_CASE: 'Test Cases',
+  TEST_PLAN: 'Test Plans',
+  TEST_SUITE: 'Test Suites',
+  TEST_RUN: 'Test Runs',
+  REPORT: 'Reports',
+}
+
+const RBAC_ROLES = ['ORGANIZATION_MANAGER', 'PROJECT_MANAGER', 'PRODUCT_OWNER', 'QA_ENGINEER', 'DEVELOPER'] as const
+const OBJECT_TYPES = ['TEST_CASE', 'TEST_PLAN', 'TEST_SUITE', 'TEST_RUN', 'REPORT'] as const
+const ACTIONS = ['READ', 'EDIT', 'DELETE'] as const
+
+const permissionMap = computed(() => {
+  const map: Record<string, Record<string, Record<string, RbacPermission>>> = {}
+  for (const perm of permissions.value) {
+    if (!map[perm.role]) map[perm.role] = {}
+    if (!map[perm.role][perm.objectType]) map[perm.role][perm.objectType] = {}
+    map[perm.role][perm.objectType][perm.action] = perm
+  }
+  return map
+})
+
+function getPermission(role: string, objectType: string, action: string): RbacPermission | undefined {
+  return permissionMap.value[role]?.[objectType]?.[action]
+}
+
+async function handlePermissionToggle(permissionId: string, currentAllowed: boolean) {
+  const updated = await updateRbacPermission(orgId.value, permissionId, !currentAllowed)
+  if (updated) {
+    const index = permissions.value.findIndex((p) => p.id === permissionId)
+    if (index !== -1) {
+      permissions.value[index] = updated
+    }
   }
 }
 </script>
@@ -257,57 +296,73 @@ async function handleCreateProject() {
       <!-- RBAC tab -->
       <div v-if="activeTab === 'rbac'" class="space-y-4">
         <div>
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">RBAC Configuration</h2>
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Role-Based Access Control</h2>
           <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Configure role-based access control for this organization.
+            Configure which roles can perform actions on different resource types.
           </p>
         </div>
 
-        <UCard>
-          <div
-            v-if="permissions.length === 0"
-            class="text-center py-8 text-sm text-gray-500 dark:text-gray-400"
-          >
-            No RBAC permissions configured. Default permissions will be used.
+        <!-- Access denied -->
+        <UCard v-if="rbacAccessDenied">
+          <div class="text-center py-8">
+            <UIcon name="i-lucide-shield-off" class="text-3xl text-gray-400 mb-2" />
+            <p class="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Insufficient permissions
+            </p>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              Only Organization Managers can view and manage RBAC settings.
+            </p>
           </div>
-          <div v-else class="overflow-x-auto">
+        </UCard>
+
+        <!-- No permissions configured -->
+        <UCard v-else-if="permissions.length === 0">
+          <div class="text-center py-8 text-sm text-gray-500 dark:text-gray-400">
+            No custom RBAC permissions configured. Default permissions apply.
+          </div>
+        </UCard>
+
+        <!-- Permission matrix per role -->
+        <template v-else>
+          <UCard v-for="role in RBAC_ROLES" :key="role">
+            <template #header>
+              <div class="flex items-center gap-2">
+                <UBadge :color="getRoleBadgeColor(role) as any" variant="subtle" size="sm">
+                  {{ formatRole(role) }}
+                </UBadge>
+              </div>
+            </template>
             <table class="w-full text-sm">
               <thead>
                 <tr class="border-b border-gray-200 dark:border-gray-700">
-                  <th class="text-left py-2 px-3 font-medium text-gray-500 dark:text-gray-400">Role</th>
-                  <th class="text-left py-2 px-3 font-medium text-gray-500 dark:text-gray-400">Object Type</th>
-                  <th class="text-left py-2 px-3 font-medium text-gray-500 dark:text-gray-400">Action</th>
-                  <th class="text-center py-2 px-3 font-medium text-gray-500 dark:text-gray-400">Allowed</th>
+                  <th class="text-left py-2 pr-4 font-medium text-gray-500 dark:text-gray-400">Resource</th>
+                  <th v-for="action in ACTIONS" :key="action" class="text-center py-2 px-4 font-medium text-gray-500 dark:text-gray-400 w-24">
+                    {{ action.charAt(0) + action.slice(1).toLowerCase() }}
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 <tr
-                  v-for="perm in permissions"
-                  :key="perm.id"
+                  v-for="objectType in OBJECT_TYPES"
+                  :key="objectType"
                   class="border-b border-gray-100 dark:border-gray-800 last:border-0"
                 >
-                  <td class="py-2 px-3">
-                    <UBadge :color="getRoleBadgeColor(perm.role)" variant="subtle" size="xs">
-                      {{ formatRole(perm.role) }}
-                    </UBadge>
+                  <td class="py-2.5 pr-4 text-gray-700 dark:text-gray-300">
+                    {{ RESOURCE_LABELS[objectType] ?? formatRole(objectType) }}
                   </td>
-                  <td class="py-2 px-3 text-gray-700 dark:text-gray-300">
-                    {{ formatRole(perm.objectType) }}
-                  </td>
-                  <td class="py-2 px-3 text-gray-700 dark:text-gray-300">
-                    {{ perm.action }}
-                  </td>
-                  <td class="py-2 px-3 text-center">
-                    <UIcon
-                      :name="perm.allowed ? 'i-lucide-check' : 'i-lucide-x'"
-                      :class="perm.allowed ? 'text-green-500' : 'text-red-500'"
+                  <td v-for="action in ACTIONS" :key="action" class="py-2.5 px-4 text-center">
+                    <USwitch
+                      v-if="getPermission(role, objectType, action)"
+                      :model-value="getPermission(role, objectType, action)!.allowed"
+                      size="sm"
+                      @update:model-value="handlePermissionToggle(getPermission(role, objectType, action)!.id, getPermission(role, objectType, action)!.allowed)"
                     />
                   </td>
                 </tr>
               </tbody>
             </table>
-          </div>
-        </UCard>
+          </UCard>
+        </template>
       </div>
     </template>
 

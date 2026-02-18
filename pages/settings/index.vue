@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { OrganizationMember, RbacPermission, OrganizationRole, ObjectType, RbacAction } from '~/types'
+import type { OrganizationMember, OrganizationRole } from '~/types'
 import { usePreferencesStore, type ThemePreference } from '~/stores/preferences'
 
 definePageMeta({
@@ -10,12 +10,10 @@ useSeoMeta({
   title: 'Settings',
 })
 
-const { currentOrg, updateOrganization, getMembers, inviteMember, removeMember, updateMemberRole, getRbacPermissions, updateRbacPermission } = useOrganization()
+const { currentOrg, updateOrganization, getMembers, inviteMember, removeMember, updateMemberRole } = useOrganization()
 
 const activeTab = ref('organization')
 const members = ref<OrganizationMember[]>([])
-const permissions = ref<RbacPermission[]>([])
-const rbacAccessDenied = ref(false)
 const loading = ref(true)
 
 // Organization settings form
@@ -48,8 +46,7 @@ function handleThemeChange(value: string) {
 const tabs = [
   { label: 'Organization', value: 'organization', icon: 'i-lucide-building-2' },
   { label: 'Members', value: 'members', icon: 'i-lucide-users' },
-  { label: 'RBAC', value: 'rbac', icon: 'i-lucide-shield' },
-  { label: 'Preferences', value: 'preferences', icon: 'i-lucide-palette' },
+{ label: 'Preferences', value: 'preferences', icon: 'i-lucide-palette' },
 ]
 
 const roleOptions: Array<{ label: string; value: OrganizationRole }> = [
@@ -65,13 +62,8 @@ async function loadData() {
 
   loading.value = true
   try {
-    const [membersData, rbacResult] = await Promise.all([
-      getMembers(currentOrg.value.id),
-      getRbacPermissions(currentOrg.value.id),
-    ])
+    const membersData = await getMembers(currentOrg.value.id)
     members.value = membersData
-    permissions.value = rbacResult.data
-    rbacAccessDenied.value = rbacResult.accessDenied
 
     orgName.value = currentOrg.value.name
     orgMaxProjects.value = currentOrg.value.maxProjects
@@ -134,61 +126,6 @@ async function handleRoleChange(memberId: string, newRole: string) {
   await updateMemberRole(currentOrg.value.id, memberId, newRole)
 }
 
-async function handlePermissionToggle(permissionId: string, currentAllowed: boolean) {
-  if (!currentOrg.value) return
-  const updated = await updateRbacPermission(currentOrg.value.id, permissionId, !currentAllowed)
-  if (updated) {
-    const index = permissions.value.findIndex((p) => p.id === permissionId)
-    if (index !== -1) {
-      permissions.value[index] = updated
-    }
-  }
-}
-
-function formatRole(role: string): string {
-  return role
-    .split('_')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(' ')
-}
-
-const RESOURCE_LABELS: Record<string, string> = {
-  TEST_CASE: 'Test Cases',
-  TEST_PLAN: 'Test Plans',
-  TEST_SUITE: 'Test Suites',
-  TEST_RUN: 'Test Runs',
-  REPORT: 'Reports',
-}
-
-function getRoleBadgeColor(role: string): string {
-  const colors: Record<string, string> = {
-    ORGANIZATION_MANAGER: 'error',
-    PROJECT_MANAGER: 'warning',
-    PRODUCT_OWNER: 'info',
-    QA_ENGINEER: 'success',
-    DEVELOPER: 'neutral',
-  }
-  return colors[role] ?? 'neutral'
-}
-
-// RBAC matrix helpers
-const RBAC_ROLES = ['ORGANIZATION_MANAGER', 'PROJECT_MANAGER', 'PRODUCT_OWNER', 'QA_ENGINEER', 'DEVELOPER'] as const
-const OBJECT_TYPES = ['TEST_CASE', 'TEST_PLAN', 'TEST_SUITE', 'TEST_RUN', 'REPORT'] as const
-const ACTIONS = ['READ', 'EDIT', 'DELETE'] as const
-
-const permissionMap = computed(() => {
-  const map: Record<string, Record<string, Record<string, RbacPermission>>> = {}
-  for (const perm of permissions.value) {
-    if (!map[perm.role]) map[perm.role] = {}
-    if (!map[perm.role][perm.objectType]) map[perm.role][perm.objectType] = {}
-    map[perm.role][perm.objectType][perm.action] = perm
-  }
-  return map
-})
-
-function getPermission(role: string, objectType: string, action: string): RbacPermission | undefined {
-  return permissionMap.value[role]?.[objectType]?.[action]
-}
 </script>
 
 <template>
@@ -196,7 +133,7 @@ function getPermission(role: string, objectType: string, action: string): RbacPe
     <div>
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Settings</h1>
       <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-        Manage organization settings, members, and access control.
+        Manage organization settings, members, and preferences.
       </p>
     </div>
 
@@ -351,80 +288,6 @@ function getPermission(role: string, objectType: string, action: string): RbacPe
           </UCard>
         </div>
 
-        <!-- RBAC tab -->
-        <div v-else-if="activeTab === 'rbac'" class="space-y-4">
-          <div>
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Role-Based Access Control</h2>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              Configure which roles can perform actions on different resource types.
-            </p>
-          </div>
-
-          <!-- Access denied -->
-          <UCard v-if="rbacAccessDenied">
-            <div class="text-center py-8">
-              <UIcon name="i-lucide-shield-off" class="text-3xl text-gray-400 dark:text-gray-400 mb-2" />
-              <p class="text-sm font-medium text-gray-700 dark:text-gray-300" data-testid="settings-rbac-access-denied">
-                Insufficient permissions
-              </p>
-              <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                Only Organization Managers can view and manage RBAC settings.
-              </p>
-            </div>
-          </UCard>
-
-          <!-- No permissions configured -->
-          <UCard v-else-if="permissions.length === 0">
-            <div class="text-center py-8">
-              <UIcon name="i-lucide-shield" class="text-3xl text-gray-400 dark:text-gray-400 mb-2" />
-              <p class="text-sm text-gray-500 dark:text-gray-400" data-testid="settings-no-rbac-message">
-                No custom RBAC permissions configured. Default permissions apply.
-              </p>
-            </div>
-          </UCard>
-
-          <!-- Permission matrix per role -->
-          <template v-else>
-            <UCard v-for="role in RBAC_ROLES" :key="role">
-              <template #header>
-                <div class="flex items-center gap-2">
-                  <UBadge :color="getRoleBadgeColor(role) as any" variant="subtle" size="sm">
-                    {{ formatRole(role) }}
-                  </UBadge>
-                </div>
-              </template>
-              <table class="w-full text-sm">
-                <thead>
-                  <tr class="border-b border-gray-200 dark:border-gray-700">
-                    <th class="text-left py-2 pr-4 font-medium text-gray-500 dark:text-gray-400">Resource</th>
-                    <th v-for="action in ACTIONS" :key="action" class="text-center py-2 px-4 font-medium text-gray-500 dark:text-gray-400 w-24">
-                      {{ action.charAt(0) + action.slice(1).toLowerCase() }}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr
-                    v-for="objectType in OBJECT_TYPES"
-                    :key="objectType"
-                    class="border-b border-gray-100 dark:border-gray-800 last:border-0"
-                  >
-                    <td class="py-2.5 pr-4 text-gray-700 dark:text-gray-300">
-                      {{ RESOURCE_LABELS[objectType] ?? formatRole(objectType) }}
-                    </td>
-                    <td v-for="action in ACTIONS" :key="action" class="py-2.5 px-4 text-center">
-                      <USwitch
-                        v-if="getPermission(role, objectType, action)"
-                        :model-value="getPermission(role, objectType, action)!.allowed"
-                        size="sm"
-                        @update:model-value="handlePermissionToggle(getPermission(role, objectType, action)!.id, getPermission(role, objectType, action)!.allowed)"
-                      />
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </UCard>
-          </template>
-        </div>
       </template>
     </template>
 
