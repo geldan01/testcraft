@@ -9,7 +9,7 @@ const route = useRoute()
 const projectId = computed(() => route.params.id as string)
 const planId = computed(() => route.params.planId as string)
 
-const { getTestPlan, updateTestPlan, linkTestCase, unlinkTestCase } = useTestPlan()
+const { getTestPlan, updateTestPlan, deleteTestPlan, linkTestCase, unlinkTestCase } = useTestPlan()
 const { getTestCases } = useTestCase()
 
 const plan = ref<TestPlan | null>(null)
@@ -101,8 +101,8 @@ async function saveEdit() {
   })
 
   if (updated) {
-    plan.value = updated
     editing.value = false
+    await loadPlan()
   }
 }
 
@@ -110,6 +110,22 @@ async function handleUnlinkCase(caseId: string) {
   const success = await unlinkTestCase(planId.value, caseId)
   if (success) {
     await loadPlan()
+  }
+}
+
+// Delete
+const showDeleteModal = ref(false)
+const deleting = ref(false)
+
+async function handleDelete() {
+  deleting.value = true
+  try {
+    const success = await deleteTestPlan(planId.value)
+    if (success) {
+      await navigateTo(`/projects/${projectId.value}/test-plans`)
+    }
+  } finally {
+    deleting.value = false
   }
 }
 </script>
@@ -170,6 +186,16 @@ async function handleUnlinkCase(caseId: string) {
             @click="openAddCasesModal"
           >
             Add Test Cases
+          </UButton>
+          <UButton
+            data-testid="test-plan-detail-delete-button"
+            icon="i-lucide-trash-2"
+            variant="outline"
+            color="error"
+            size="sm"
+            @click="showDeleteModal = true"
+          >
+            Delete
           </UButton>
         </div>
       </div>
@@ -257,6 +283,28 @@ async function handleUnlinkCase(caseId: string) {
         Back to Test Plans
       </UButton>
     </div>
+
+    <!-- Delete Confirmation Modal -->
+    <UModal
+      v-model:open="showDeleteModal"
+      title="Delete Test Plan"
+      :description="`Are you sure you want to delete '${plan?.name}'? Linked test cases will NOT be deleted, only unlinked from this plan.`"
+      data-testid="delete-test-plan-modal"
+    >
+      <template #footer>
+        <div class="flex justify-end gap-3">
+          <UButton variant="ghost" color="neutral" @click="showDeleteModal = false">Cancel</UButton>
+          <UButton
+            data-testid="delete-test-plan-confirm-button"
+            color="error"
+            :loading="deleting"
+            @click="handleDelete"
+          >
+            Delete Plan
+          </UButton>
+        </div>
+      </template>
+    </UModal>
 
     <!-- Add Test Cases Modal -->
     <UModal

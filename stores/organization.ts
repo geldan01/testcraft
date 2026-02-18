@@ -1,76 +1,65 @@
 import { defineStore } from 'pinia'
 import type { Organization } from '~/types'
 
-interface OrganizationState {
-  organizations: Organization[]
-  currentOrganization: Organization | null
-  loading: boolean
-}
+const ORG_COOKIE_NAME = 'current_org_id'
 
-export const useOrganizationStore = defineStore('organization', {
-  state: (): OrganizationState => ({
-    organizations: [],
-    currentOrganization: null,
-    loading: false,
-  }),
+export const useOrganizationStore = defineStore('organization', () => {
+  // Cookie ref created once during store init (runs in setup/middleware context)
+  const orgCookie = useCookie(ORG_COOKIE_NAME, {
+    maxAge: 60 * 60 * 24 * 365,
+    path: '/',
+    sameSite: 'lax' as const,
+  })
 
-  getters: {
-    currentOrgId: (state): string | null => state.currentOrganization?.id ?? null,
-    currentOrgName: (state): string => state.currentOrganization?.name ?? 'Select Organization',
-    hasOrganizations: (state): boolean => state.organizations.length > 0,
-  },
+  const organizations = ref<Organization[]>([])
+  const currentOrganization = ref<Organization | null>(null)
+  const loading = ref(false)
 
-  actions: {
-    async fetchOrganizations(): Promise<void> {
-      this.loading = true
-      try {
-        const data = await $fetch<Organization[]>('/api/organizations')
-        this.organizations = data
+  const currentOrgId = computed(() => currentOrganization.value?.id ?? null)
+  const currentOrgName = computed(() => currentOrganization.value?.name ?? 'Select Organization')
+  const hasOrganizations = computed(() => organizations.value.length > 0)
 
-        // Auto-select first org if none selected
-        if (!this.currentOrganization && data.length > 0) {
-          this.currentOrganization = data[0]
-          this.persistCurrentOrg(data[0].id)
-        }
-      } catch {
-        this.organizations = []
-      } finally {
-        this.loading = false
+  async function fetchOrganizations(): Promise<void> {
+    loading.value = true
+    try {
+      const data = await $fetch<Organization[]>('/api/organizations')
+      organizations.value = data
+
+      if (!currentOrganization.value && data.length > 0) {
+        const savedOrg = orgCookie.value ? data.find((o) => o.id === orgCookie.value) : null
+        currentOrganization.value = savedOrg ?? data[0]
+        orgCookie.value = currentOrganization.value.id
       }
-    },
+    } catch {
+      organizations.value = []
+    } finally {
+      loading.value = false
+    }
+  }
 
-    switchOrganization(orgId: string): void {
-      const org = this.organizations.find((o) => o.id === orgId)
-      if (org) {
-        this.currentOrganization = org
-        this.persistCurrentOrg(orgId)
-      }
-    },
+  function switchOrganization(orgId: string): void {
+    const org = organizations.value.find((o) => o.id === orgId)
+    if (org) {
+      currentOrganization.value = org
+      orgCookie.value = orgId
+    }
+  }
 
-    persistCurrentOrg(orgId: string): void {
-      if (import.meta.client) {
-        localStorage.setItem('current_org_id', orgId)
-      }
-    },
+  function clearOrganizations(): void {
+    organizations.value = []
+    currentOrganization.value = null
+    orgCookie.value = null
+  }
 
-    restoreCurrentOrg(): void {
-      if (import.meta.client) {
-        const savedOrgId = localStorage.getItem('current_org_id')
-        if (savedOrgId && this.organizations.length > 0) {
-          const org = this.organizations.find((o) => o.id === savedOrgId)
-          if (org) {
-            this.currentOrganization = org
-          }
-        }
-      }
-    },
-
-    clearOrganizations(): void {
-      this.organizations = []
-      this.currentOrganization = null
-      if (import.meta.client) {
-        localStorage.removeItem('current_org_id')
-      }
-    },
-  },
+  return {
+    organizations,
+    currentOrganization,
+    loading,
+    currentOrgId,
+    currentOrgName,
+    hasOrganizations,
+    fetchOrganizations,
+    switchOrganization,
+    clearOrganizations,
+  }
 })

@@ -33,7 +33,6 @@ interface MockAuthStore {
 
 interface MockOrgStore {
   fetchOrganizations: () => Promise<void>
-  restoreCurrentOrg: () => void
   clearOrganizations: () => void
 }
 
@@ -62,7 +61,6 @@ function createMockAuthStore(overrides: Partial<MockAuthStore> = {}): MockAuthSt
 function createMockOrgStore(overrides: Partial<MockOrgStore> = {}): MockOrgStore {
   return {
     fetchOrganizations: vi.fn().mockResolvedValue(undefined),
-    restoreCurrentOrg: vi.fn(),
     clearOrganizations: vi.fn(),
     ...overrides,
   }
@@ -87,7 +85,6 @@ function createUseAuth(authStore: MockAuthStore, orgStore: MockOrgStore, router:
   async function login(credentials: LoginRequest): Promise<void> {
     await authStore.login(credentials)
     await orgStore.fetchOrganizations()
-    orgStore.restoreCurrentOrg()
     await router.push('/dashboard')
   }
 
@@ -110,9 +107,7 @@ function createUseAuth(authStore: MockAuthStore, orgStore: MockOrgStore, router:
     authStore.initFromStorage()
     if (authStore.token) {
       authStore.fetchCurrentUser()
-      orgStore.fetchOrganizations().then(() => {
-        orgStore.restoreCurrentOrg()
-      })
+      orgStore.fetchOrganizations()
     }
   }
 
@@ -196,19 +191,13 @@ describe('useAuth Composable', () => {
       expect(orgStore.fetchOrganizations).toHaveBeenCalled()
     })
 
-    it('restores current org after fetching organizations', async () => {
-      const { login } = createUseAuth(authStore, orgStore, router)
-      await login({ email: 'test@example.com', password: 'pass' })
-      expect(orgStore.restoreCurrentOrg).toHaveBeenCalled()
-    })
-
     it('navigates to /dashboard after login', async () => {
       const { login } = createUseAuth(authStore, orgStore, router)
       await login({ email: 'test@example.com', password: 'pass' })
       expect(router.push).toHaveBeenCalledWith('/dashboard')
     })
 
-    it('calls actions in correct order: login -> fetchOrgs -> restoreOrg -> navigate', async () => {
+    it('calls actions in correct order: login -> fetchOrgs -> navigate', async () => {
       const callOrder: string[] = []
       authStore.login = vi.fn().mockImplementation(async () => {
         callOrder.push('login')
@@ -216,9 +205,6 @@ describe('useAuth Composable', () => {
       })
       orgStore.fetchOrganizations = vi.fn().mockImplementation(async () => {
         callOrder.push('fetchOrganizations')
-      })
-      orgStore.restoreCurrentOrg = vi.fn().mockImplementation(() => {
-        callOrder.push('restoreCurrentOrg')
       })
       router.push = vi.fn().mockImplementation(async () => {
         callOrder.push('navigate')
@@ -230,7 +216,6 @@ describe('useAuth Composable', () => {
       expect(callOrder).toEqual([
         'login',
         'fetchOrganizations',
-        'restoreCurrentOrg',
         'navigate',
       ])
     })
@@ -348,26 +333,14 @@ describe('useAuth Composable', () => {
       expect(orgStore.fetchOrganizations).not.toHaveBeenCalled()
     })
 
-    it('restores current org after organizations are fetched', async () => {
+    it('org restoration happens inside fetchOrganizations (cookie-based)', () => {
       authStore.token = 'stored-token'
-
-      // Make fetchOrganizations resolve so .then() executes
-      let resolveOrgs: () => void
-      orgStore.fetchOrganizations = vi.fn().mockImplementation(
-        () => new Promise<void>((resolve) => { resolveOrgs = resolve }),
-      )
 
       const { initAuth } = createUseAuth(authStore, orgStore, router)
       initAuth()
 
-      // restoreCurrentOrg should not have been called yet
-      expect(orgStore.restoreCurrentOrg).not.toHaveBeenCalled()
-
-      // Resolve the fetchOrganizations promise
-      resolveOrgs!()
-      await new Promise((resolve) => setTimeout(resolve, 0))
-
-      expect(orgStore.restoreCurrentOrg).toHaveBeenCalled()
+      // fetchOrganizations now handles org restoration internally via useCookie
+      expect(orgStore.fetchOrganizations).toHaveBeenCalled()
     })
   })
 

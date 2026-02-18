@@ -20,14 +20,14 @@ const loading = ref(true)
 async function loadData() {
   loading.value = true
   try {
-    const [orgData, membersData, permissionsData] = await Promise.all([
+    const [orgData, membersData, rbacResult] = await Promise.all([
       getOrganization(orgId.value),
       getMembers(orgId.value),
       getRbacPermissions(orgId.value),
     ])
     org.value = orgData
     members.value = membersData
-    permissions.value = permissionsData
+    permissions.value = rbacResult.data
 
     if (orgData) {
       switchOrg(orgData.id)

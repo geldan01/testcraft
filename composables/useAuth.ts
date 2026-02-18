@@ -15,14 +15,12 @@ export const useAuth = () => {
   async function login(credentials: LoginRequest, rememberMe = true): Promise<void> {
     await authStore.login(credentials, rememberMe)
     await orgStore.fetchOrganizations()
-    orgStore.restoreCurrentOrg()
     await router.push('/dashboard')
   }
 
   async function register(data: RegisterRequest): Promise<void> {
     await authStore.register(data)
     await orgStore.fetchOrganizations()
-    orgStore.restoreCurrentOrg()
     await router.push('/dashboard')
   }
 
@@ -40,9 +38,7 @@ export const useAuth = () => {
     authStore.initFromStorage()
     if (authStore.token) {
       authStore.fetchCurrentUser()
-      orgStore.fetchOrganizations().then(() => {
-        orgStore.restoreCurrentOrg()
-      })
+      orgStore.fetchOrganizations()
     }
   }
 

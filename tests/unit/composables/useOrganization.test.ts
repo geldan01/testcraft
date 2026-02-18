@@ -130,11 +130,16 @@ function createOrganizationLogic(fetchFn: MockFetch, orgStore: MockOrgStore) {
     }
   }
 
-  async function getRbacPermissions(orgId: string): Promise<RbacPermission[]> {
+  async function getRbacPermissions(orgId: string): Promise<{ data: RbacPermission[]; accessDenied: boolean }> {
     try {
-      return await fetchFn(`/api/organizations/${orgId}/rbac`)
-    } catch {
-      return []
+      const data = await fetchFn(`/api/organizations/${orgId}/rbac`)
+      return { data, accessDenied: false }
+    } catch (err: unknown) {
+      const status = (err as { statusCode?: number })?.statusCode
+      if (status === 403) {
+        return { data: [], accessDenied: true }
+      }
+      return { data: [], accessDenied: false }
     }
   }
 
@@ -577,18 +582,32 @@ describe('useOrganization Composable', () => {
       const { getRbacPermissions } = createOrganizationLogic(mockFetch, mockOrgStore)
       const result = await getRbacPermissions('org-10')
 
-      expect(result).toHaveLength(2)
-      expect(result[0].allowed).toBe(true)
-      expect(result[1].allowed).toBe(false)
+      expect(result.data).toHaveLength(2)
+      expect(result.data[0].allowed).toBe(true)
+      expect(result.data[1].allowed).toBe(false)
+      expect(result.accessDenied).toBe(false)
     })
 
-    it('returns empty array on error', async () => {
-      mockFetch.mockRejectedValue(new Error('Forbidden'))
+    it('returns accessDenied true on 403 error', async () => {
+      const err = new Error('Forbidden') as Error & { statusCode: number }
+      err.statusCode = 403
+      mockFetch.mockRejectedValue(err)
 
       const { getRbacPermissions } = createOrganizationLogic(mockFetch, mockOrgStore)
       const result = await getRbacPermissions('org-10')
 
-      expect(result).toEqual([])
+      expect(result.data).toEqual([])
+      expect(result.accessDenied).toBe(true)
+    })
+
+    it('returns accessDenied false on other errors', async () => {
+      mockFetch.mockRejectedValue(new Error('Network error'))
+
+      const { getRbacPermissions } = createOrganizationLogic(mockFetch, mockOrgStore)
+      const result = await getRbacPermissions('org-10')
+
+      expect(result.data).toEqual([])
+      expect(result.accessDenied).toBe(false)
     })
   })
 

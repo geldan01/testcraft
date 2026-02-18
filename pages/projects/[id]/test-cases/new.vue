@@ -12,6 +12,22 @@ useSeoMeta({
 const route = useRoute()
 const projectId = computed(() => route.params.id as string)
 const { createTestCase } = useTestCase()
+const { currentProject, projects, fetchProjects } = useProject()
+
+// Ensure projects are loaded for the selector
+if (currentProject.value?.organizationId && projects.value.length === 0) {
+  await fetchProjects(currentProject.value.organizationId)
+}
+
+const projectOptions = computed(() =>
+  projects.value.map((p) => ({ label: p.name, value: p.id }))
+)
+
+function handleProjectChange(newProjectId: string) {
+  if (newProjectId && newProjectId !== projectId.value) {
+    navigateTo(`/projects/${newProjectId}/test-cases/new`)
+  }
+}
 
 const name = ref('')
 const description = ref('')
@@ -114,6 +130,16 @@ async function handleSubmit() {
           <h2 class="text-base font-semibold">Basic Information</h2>
         </template>
         <div class="space-y-4">
+          <UFormField label="Project">
+            <USelect
+              :model-value="projectId"
+              :items="projectOptions"
+              value-key="value"
+              class="w-full"
+              @update:model-value="handleProjectChange($event as string)"
+            />
+          </UFormField>
+
           <UFormField label="Test case name" required>
             <UInput
               v-model="name"
