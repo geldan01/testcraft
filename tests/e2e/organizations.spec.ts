@@ -235,9 +235,6 @@ test.describe('Organizations - Detail Page', () => {
     // Roles should be displayed as badges
     await expect(page.getByText('Organization Manager')).toBeVisible()
     await expect(page.getByText('Qa Engineer')).toBeVisible()
-
-    // Invite Member button
-    await expect(orgDetail.inviteMemberButton).toBeVisible()
   })
 
   test('shows RBAC tab with empty permissions', async ({ page }) => {

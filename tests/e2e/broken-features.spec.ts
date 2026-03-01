@@ -174,20 +174,6 @@ test.describe('Broken Features - Organization Detail', () => {
     await expect(page).toHaveURL(urlBefore)
   })
 
-  test('"Invite Member" button in members tab has no handler', async ({ page }) => {
-    await orgDetail.goto('org-1')
-
-    // Click Members tab
-    await orgDetail.membersTab.click()
-
-    await expect(orgDetail.inviteMemberButton).toBeVisible()
-
-    // Clicking should not open a modal or navigate (no handler wired up on org detail page)
-    const urlBefore = page.url()
-    await orgDetail.inviteMemberButton.click()
-    await page.waitForTimeout(500)
-    await expect(page).toHaveURL(urlBefore)
-  })
 })
 
 // ---------------------------------------------------------------------------

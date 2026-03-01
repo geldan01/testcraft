@@ -36,6 +36,8 @@ export type CommentableType = 'TEST_CASE' | 'TEST_RUN'
 
 export type ActivityActionType = 'CREATED' | 'UPDATED' | 'DELETED'
 
+export type InvitationStatus = 'PENDING' | 'ACCEPTED' | 'EXPIRED' | 'REVOKED'
+
 // =============================================================================
 // CORE MODELS
 // =============================================================================
@@ -75,6 +77,21 @@ export interface OrganizationMember {
   joinedAt: string
   user?: User
   organization?: Organization
+}
+
+export interface Invitation {
+  id: string
+  token: string
+  organizationId: string
+  email: string
+  role: OrganizationRole
+  invitedById: string
+  status: InvitationStatus
+  expiresAt: string
+  acceptedAt: string | null
+  createdAt: string
+  organization?: Organization
+  invitedBy?: User
 }
 
 export interface RbacPermission {
@@ -389,6 +406,25 @@ export interface CreateCommentInput {
 export interface InviteMemberInput {
   email: string
   role: OrganizationRole
+}
+
+export interface CreateInvitationInput {
+  email: string
+  role: OrganizationRole
+}
+
+export interface AcceptInvitationInput {
+  name?: string
+  password?: string
+}
+
+export interface InvitationInfo {
+  organizationName: string
+  invitedByName: string
+  email: string
+  role: OrganizationRole
+  expiresAt: string
+  existingUser: boolean
 }
 
 // =============================================================================

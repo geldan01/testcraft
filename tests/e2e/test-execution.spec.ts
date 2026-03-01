@@ -564,13 +564,14 @@ test.describe('Test Run Detail Page - Completion', () => {
       executedById: realUser.id,
       executedBy: realUser,
     }
-    await setupTestRunDetailPage(page, run, 'run-1')
-    await mockCompleteTestRunApi(page, 'run-1', {
+    const completedRun = {
       ...run,
       status: 'PASS',
       duration: 60,
       notes: 'Verified all steps',
-    })
+    }
+    await setupTestRunDetailPage(page, run, 'run-1')
+    await mockCompleteTestRunApi(page, 'run-1', completedRun)
 
     const detail = new TestRunDetailPage(page)
     await detail.goto('project-1', 'run-1')
@@ -578,6 +579,17 @@ test.describe('Test Run Detail Page - Completion', () => {
     // Fill in the completion form
     await detail.completionStatusSelect.selectOption('PASS')
     await detail.completionNotesField.fill('Verified all steps')
+
+    // Update the GET mock to return completed data before clicking complete,
+    // because the page re-fetches the run after successful completion
+    await page.unroute(`**/api/test-runs/run-1`)
+    await mockTestRunDetailApi(page, 'run-1', completedRun)
+    await mockTestRunAttachmentsApi(page, 'run-1', [])
+    await page.route(`**/api/test-runs/run-1/comments`, async (route) => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) })
+    })
+    await mockCompleteTestRunApi(page, 'run-1', completedRun)
+
     await detail.completeRunButton.click()
 
     // After completion, the "Complete This Run" heading should disappear

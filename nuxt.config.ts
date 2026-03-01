@@ -22,6 +22,12 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     jwtSecret: process.env.JWT_SECRET || 'dev-secret-change-in-production',
+    emailEnabled: process.env.EMAIL_ENABLED === 'true',
+    emailFrom: process.env.EMAIL_FROM || 'TestCraft <noreply@testcraft.io>',
+    smtpHost: process.env.SMTP_HOST || '',
+    smtpPort: parseInt(process.env.SMTP_PORT || '587'),
+    smtpUser: process.env.SMTP_USER || '',
+    smtpPass: process.env.SMTP_PASS || '',
     public: {
       appName: 'TestCraft',
     },
