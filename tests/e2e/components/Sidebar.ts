@@ -11,7 +11,7 @@ export class Sidebar {
   get collapseButton(): Locator { return this.page.getByTestId('sidebar-collapse-toggle') }
   get expandButton(): Locator { return this.page.getByTestId('sidebar-collapse-toggle') }
 
-  // Admin section (only visible to super-admins)
+  // Admin section (only visible to admins)
   get adminSection(): Locator { return this.page.getByTestId('sidebar-admin-section') }
   get adminLink(): Locator { return this.page.getByTestId('sidebar-nav-admin') }
   get usersLink(): Locator { return this.page.getByTestId('sidebar-nav-users') }

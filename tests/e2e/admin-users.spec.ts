@@ -58,10 +58,10 @@ test.describe('Admin Users - List Page', () => {
     await expect(page.getByText('SUSPENDED')).toBeVisible()
   })
 
-  test('displays Super Admin badge for admin users', async ({ page }) => {
+  test('displays Admin badge for admin users', async ({ page }) => {
     await usersPage.goto()
 
-    await expect(page.getByText('Super Admin')).toBeVisible()
+    await expect(page.getByText('Admin')).toBeVisible()
   })
 
   test('search input is visible', async () => {

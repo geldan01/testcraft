@@ -16,7 +16,7 @@ export async function checkRbacPermission(
   action: RbacAction,
   isAdmin = false,
 ): Promise<boolean> {
-  // Super-admins bypass all RBAC checks
+  // Admins bypass all RBAC checks
   if (isAdmin) return true
 
   // Look up the user's membership to get their role
