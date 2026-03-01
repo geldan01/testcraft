@@ -63,7 +63,7 @@ export async function requireAdmin(event: H3Event) {
   if (!user.isAdmin) {
     throw createError({
       statusCode: 403,
-      statusMessage: 'Super-admin access required',
+      statusMessage: 'Admin access required',
     })
   }
   return user

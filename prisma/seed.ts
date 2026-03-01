@@ -122,9 +122,9 @@ async function main() {
   console.log('✓ Organization members added')
 
   // ============================================================================
-  // 3b. SECOND ORGANIZATION (admin is NOT a member — for testing super-admin access)
+  // 3b. SECOND ORGANIZATION (admin is NOT a member — for testing admin access)
   // ============================================================================
-  console.log('Creating second organization for super-admin testing...')
+  console.log('Creating second organization for admin testing...')
   const secondOrg = await prisma.organization.upsert({
     where: { id: 'external-org-id' },
     update: {},

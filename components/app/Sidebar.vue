@@ -159,7 +159,7 @@ function isActive(path: string): boolean {
         </ul>
       </div>
 
-      <!-- Admin nav (only for super-admins) -->
+      <!-- Admin nav (only for admins) -->
       <div v-if="adminNavItems.length > 0" data-testid="sidebar-admin-section">
         <p
           v-if="!collapsed"

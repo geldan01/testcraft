@@ -211,7 +211,7 @@ const statusOptions = [
 
         <template #isAdmin-cell="{ row }">
           <UBadge v-if="row.original.isAdmin" color="primary" variant="subtle" size="sm">
-            Super Admin
+            Admin
           </UBadge>
           <span v-else class="text-gray-400">-</span>
         </template>

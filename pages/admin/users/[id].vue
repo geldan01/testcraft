@@ -117,7 +117,7 @@ function formatDate(date: string) {
                 {{ user.name }}
               </h1>
               <UBadge v-if="user.isAdmin" color="primary" variant="subtle" data-testid="admin-user-detail-admin-badge">
-                Super Admin
+                Admin
               </UBadge>
               <UBadge :color="getStatusColor(user.status)" variant="subtle" data-testid="admin-user-detail-status-badge">
                 {{ user.status }}
