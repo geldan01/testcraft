@@ -38,7 +38,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // Verify access and RBAC permission
-  await requireRbacPermission(user.id, testCase.project.organizationId, 'TEST_CASE', 'EDIT')
+  await requireRbacPermission(user.id, testCase.project.organizationId, 'TEST_CASE', 'EDIT', user.isAdmin)
 
   const body = await readBody(event)
   const result = updateTestCaseSchema.safeParse(body)

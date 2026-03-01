@@ -25,7 +25,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // Verify access and RBAC permission
-  await requireRbacPermission(user.id, testCase.project.organizationId, 'TEST_CASE', 'EDIT')
+  await requireRbacPermission(user.id, testCase.project.organizationId, 'TEST_CASE', 'EDIT', user.isAdmin)
 
   // Parse optional body
   const body = await readBody(event).catch(() => ({}))

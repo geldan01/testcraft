@@ -13,6 +13,7 @@ const route = useRoute()
 const { appName } = useRuntimeConfig().public
 const { currentOrg } = useOrganization()
 const { currentProject } = useProject()
+const { isAdmin } = useAuth()
 
 const mainNavItems = computed<NavigationItem[]>(() => [
   {
@@ -61,6 +62,27 @@ const projectNavItems = computed<NavigationItem[]>(() => {
       label: 'Reports',
       icon: 'i-lucide-bar-chart-3',
       to: `/projects/${projectId}/reports`,
+    },
+  ]
+})
+
+const adminNavItems = computed<NavigationItem[]>(() => {
+  if (!isAdmin.value) return []
+  return [
+    {
+      label: 'Admin',
+      icon: 'i-lucide-shield',
+      to: '/admin',
+    },
+    {
+      label: 'Users',
+      icon: 'i-lucide-users-round',
+      to: '/admin/users',
+    },
+    {
+      label: 'All Orgs',
+      icon: 'i-lucide-building',
+      to: '/admin/organizations',
     },
   ]
 })
@@ -118,6 +140,36 @@ function isActive(path: string): boolean {
         </p>
         <ul class="space-y-1">
           <li v-for="item in mainNavItems" :key="item.to">
+            <NuxtLink
+              :to="item.to"
+              :data-testid="`sidebar-nav-${item.label.toLowerCase().replace(/ /g, '-')}`"
+              class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+              :class="[
+                isActive(item.to)
+                  ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300'
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800',
+                collapsed ? 'justify-center' : '',
+              ]"
+              :title="collapsed ? item.label : undefined"
+            >
+              <UIcon :name="item.icon" class="text-lg shrink-0" />
+              <span v-if="!collapsed" class="truncate">{{ item.label }}</span>
+            </NuxtLink>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Admin nav (only for super-admins) -->
+      <div v-if="adminNavItems.length > 0" data-testid="sidebar-admin-section">
+        <p
+          v-if="!collapsed"
+          class="px-3 mb-2 text-xs font-semibold text-gray-400 dark:text-gray-400 uppercase tracking-wider"
+        >
+          Admin
+        </p>
+        <USeparator v-else class="mb-2" />
+        <ul class="space-y-1">
+          <li v-for="item in adminNavItems" :key="item.to">
             <NuxtLink
               :to="item.to"
               :data-testid="`sidebar-nav-${item.label.toLowerCase().replace(/ /g, '-')}`"

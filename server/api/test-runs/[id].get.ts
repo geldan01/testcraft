@@ -48,7 +48,7 @@ export default defineEventHandler(async (event) => {
     },
   })
 
-  if (!membership) {
+  if (!membership && !user.isAdmin) {
     throw createError({ statusCode: 403, statusMessage: 'You do not have access to this test run' })
   }
 

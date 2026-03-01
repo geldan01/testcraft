@@ -122,6 +122,37 @@ async function main() {
   console.log('✓ Organization members added')
 
   // ============================================================================
+  // 3b. SECOND ORGANIZATION (admin is NOT a member — for testing super-admin access)
+  // ============================================================================
+  console.log('Creating second organization for super-admin testing...')
+  const secondOrg = await prisma.organization.upsert({
+    where: { id: 'external-org-id' },
+    update: {},
+    create: {
+      id: 'external-org-id',
+      name: 'External Corp',
+      maxProjects: 5,
+      maxTestCasesPerProject: 500,
+    },
+  })
+
+  await prisma.organizationMember.upsert({
+    where: {
+      organizationId_userId: {
+        organizationId: secondOrg.id,
+        userId: qaEngineer.id,
+      },
+    },
+    update: {},
+    create: {
+      organizationId: secondOrg.id,
+      userId: qaEngineer.id,
+      role: OrganizationRole.ORGANIZATION_MANAGER,
+    },
+  })
+  console.log(`✓ Second organization created: ${secondOrg.name} (managed by QA Engineer)`)
+
+  // ============================================================================
   // 4. RBAC PERMISSIONS
   // ============================================================================
   console.log('Setting up RBAC permissions...')
@@ -199,6 +230,32 @@ async function main() {
           update: { allowed },
           create: {
             organizationId: organization.id,
+            role,
+            objectType,
+            action,
+            allowed,
+          },
+        })
+      }
+    }
+  }
+  // Also seed RBAC for the second organization
+  for (const role of roles) {
+    for (const objectType of objectTypes) {
+      for (const action of actions) {
+        const allowed = permissionsMatrix[role][objectType][action]
+        await prisma.rbacPermission.upsert({
+          where: {
+            organizationId_role_objectType_action: {
+              organizationId: secondOrg.id,
+              role,
+              objectType,
+              action,
+            },
+          },
+          update: { allowed },
+          create: {
+            organizationId: secondOrg.id,
             role,
             objectType,
             action,

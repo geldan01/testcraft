@@ -119,3 +119,155 @@ export const MOCK_TOP_FAILING_TESTS = {
     },
   ],
 }
+
+// =============================================================================
+// ADMIN MOCK DATA
+// =============================================================================
+
+export const MOCK_ADMIN_STATS = {
+  totalUsers: 25,
+  activeUsers: 22,
+  suspendedUsers: 3,
+  totalOrganizations: 5,
+  totalProjects: 12,
+  totalTestCases: 340,
+}
+
+export const MOCK_ADMIN_USERS = [
+  {
+    id: 'admin-user-1',
+    email: 'admin@testcraft.io',
+    name: 'System Administrator',
+    avatarUrl: null,
+    authProvider: 'EMAIL',
+    isAdmin: true,
+    status: 'ACTIVE',
+    createdAt: '2025-01-01T00:00:00.000Z',
+    updatedAt: '2025-01-01T00:00:00.000Z',
+    _count: { organizationMemberships: 2 },
+  },
+  {
+    id: 'regular-user-2',
+    email: 'jane@example.com',
+    name: 'Jane Smith',
+    avatarUrl: null,
+    authProvider: 'EMAIL',
+    isAdmin: false,
+    status: 'ACTIVE',
+    createdAt: '2025-02-15T00:00:00.000Z',
+    updatedAt: '2025-02-15T00:00:00.000Z',
+    _count: { organizationMemberships: 1 },
+  },
+  {
+    id: 'suspended-user-3',
+    email: 'bob@example.com',
+    name: 'Bob Johnson',
+    avatarUrl: null,
+    authProvider: 'EMAIL',
+    isAdmin: false,
+    status: 'SUSPENDED',
+    createdAt: '2025-03-10T00:00:00.000Z',
+    updatedAt: '2025-03-10T00:00:00.000Z',
+    _count: { organizationMemberships: 0 },
+  },
+]
+
+export const MOCK_ADMIN_USER_DETAIL = {
+  id: 'regular-user-2',
+  email: 'jane@example.com',
+  name: 'Jane Smith',
+  avatarUrl: null,
+  authProvider: 'EMAIL',
+  isAdmin: false,
+  status: 'ACTIVE',
+  createdAt: '2025-02-15T00:00:00.000Z',
+  updatedAt: '2025-02-15T00:00:00.000Z',
+  organizationMemberships: [
+    {
+      id: 'membership-1',
+      organizationId: 'org-1',
+      role: 'QA_ENGINEER',
+      joinedAt: '2025-02-15T00:00:00.000Z',
+      organization: {
+        id: 'org-1',
+        name: 'Acme Corp',
+      },
+    },
+  ],
+}
+
+export const MOCK_ADMIN_ORGS = [
+  {
+    id: 'org-admin-1',
+    name: 'Acme Corp',
+    maxProjects: 10,
+    maxTestCasesPerProject: 1000,
+    createdAt: '2025-01-01T00:00:00.000Z',
+    updatedAt: '2025-01-01T00:00:00.000Z',
+    _count: { members: 5, projects: 3 },
+  },
+  {
+    id: 'org-admin-2',
+    name: 'Beta Inc',
+    maxProjects: 5,
+    maxTestCasesPerProject: 500,
+    createdAt: '2025-02-01T00:00:00.000Z',
+    updatedAt: '2025-02-01T00:00:00.000Z',
+    _count: { members: 2, projects: 1 },
+  },
+]
+
+export const MOCK_RBAC_PERMISSIONS = (() => {
+  const roles = [
+    'ORGANIZATION_MANAGER',
+    'PROJECT_MANAGER',
+    'PRODUCT_OWNER',
+    'QA_ENGINEER',
+    'DEVELOPER',
+  ]
+  const objects = ['TEST_CASE', 'TEST_PLAN', 'TEST_SUITE', 'TEST_RUN', 'REPORT']
+  const actions = ['READ', 'EDIT', 'DELETE']
+
+  // Organization Manager gets full access
+  // Project Manager gets read+edit on everything, delete on test cases/plans/suites
+  // Product Owner gets read on everything, edit on test plans
+  // QA Engineer gets read+edit on everything except delete
+  // Developer gets read on everything, edit on test runs only
+  const permissions: Array<{
+    id: string
+    organizationId: string
+    role: string
+    objectType: string
+    action: string
+    allowed: boolean
+  }> = []
+
+  let idx = 0
+  for (const role of roles) {
+    for (const obj of objects) {
+      for (const action of actions) {
+        let allowed = false
+        if (role === 'ORGANIZATION_MANAGER') {
+          allowed = true
+        } else if (role === 'PROJECT_MANAGER') {
+          allowed = action !== 'DELETE' || ['TEST_CASE', 'TEST_PLAN', 'TEST_SUITE'].includes(obj)
+        } else if (role === 'PRODUCT_OWNER') {
+          allowed = action === 'READ' || (action === 'EDIT' && obj === 'TEST_PLAN')
+        } else if (role === 'QA_ENGINEER') {
+          allowed = action !== 'DELETE'
+        } else if (role === 'DEVELOPER') {
+          allowed = action === 'READ' || (action === 'EDIT' && obj === 'TEST_RUN')
+        }
+        permissions.push({
+          id: `rbac-${idx++}`,
+          organizationId: 'org-1',
+          role,
+          objectType: obj,
+          action,
+          allowed,
+        })
+      }
+    }
+  }
+  return permissions
+})()

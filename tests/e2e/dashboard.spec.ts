@@ -1,7 +1,7 @@
 import { test, expect } from './fixtures'
 import { DashboardPage } from './pages'
 import { MOCK_USER, MOCK_PROJECT, MOCK_STATS } from './helpers'
-import { mockDashboardApis, mockProjectStatsApi } from './helpers'
+import { mockDashboardApis, mockProjectStatsApi, clearServerState } from './helpers'
 
 /**
  * E2E tests for the dashboard page.
@@ -43,6 +43,7 @@ test.describe('Dashboard Page', () => {
 
   test.beforeEach(async ({ page }) => {
     dashboard = new DashboardPage(page)
+    await clearServerState(page)
     await mockDashboardApis(page, {
       projects: [DASHBOARD_PROJECT],
       stats: MOCK_STATS,
@@ -68,19 +69,19 @@ test.describe('Dashboard Page', () => {
 
     // Total Test Cases
     await expect(dashboard.totalTestCasesLabel).toBeVisible()
-    await expect(page.getByText('42')).toBeVisible()
+    await expect(dashboard.totalTestCasesLabel.getByText('42')).toBeVisible()
 
     // Pass Rate
     await expect(dashboard.passRateLabel).toBeVisible()
-    await expect(page.getByText('87%')).toBeVisible()
+    await expect(dashboard.passRateLabel.getByText('87%')).toBeVisible()
 
     // Recent Runs
     await expect(dashboard.recentRunsLabel).toBeVisible()
-    await expect(page.getByText('15')).toBeVisible()
+    await expect(dashboard.recentRunsLabel.getByText('15')).toBeVisible()
 
     // Debug Flagged
     await expect(dashboard.debugFlaggedLabel).toBeVisible()
-    await expect(page.getByText('3').first()).toBeVisible()
+    await expect(dashboard.debugFlaggedLabel.getByText('3').first()).toBeVisible()
   })
 
   test('renders recent activity section', async ({ page }) => {
@@ -126,6 +127,7 @@ test.describe('Dashboard - Empty State', () => {
 
   test('displays zero stats gracefully', async ({ page }) => {
     dashboard = new DashboardPage(page)
+    await clearServerState(page)
     await mockDashboardApis(page, {
       projects: [DASHBOARD_PROJECT],
     })
@@ -140,7 +142,7 @@ test.describe('Dashboard - Empty State', () => {
 
     // Stats should show zeros
     await expect(dashboard.totalTestCasesLabel).toBeVisible()
-    await expect(page.getByText('0%')).toBeVisible()
+    await expect(dashboard.passRateLabel.getByText('0%')).toBeVisible()
 
     // Activity should show empty state
     await expect(dashboard.noRecentActivity).toBeVisible()

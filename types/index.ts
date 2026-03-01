@@ -590,3 +590,43 @@ export interface BreadcrumbItem {
   to?: string
   icon?: string
 }
+
+// =============================================================================
+// ADMIN TYPES
+// =============================================================================
+
+export interface AdminStats {
+  totalUsers: number
+  activeUsers: number
+  suspendedUsers: number
+  totalOrganizations: number
+  totalProjects: number
+  totalTestCases: number
+}
+
+export interface AdminUserListItem extends User {
+  _count?: {
+    organizationMemberships: number
+  }
+}
+
+export interface AdminUserDetail extends User {
+  organizationMemberships?: (OrganizationMember & {
+    organization: Organization
+  })[]
+}
+
+export interface UpdateUserInput {
+  name?: string
+  status?: UserStatus
+  isAdmin?: boolean
+}
+
+export interface ResetPasswordInput {
+  newPassword: string
+}
+
+export interface AdminCreateOrganizationInput {
+  name: string
+  managerEmail: string
+}

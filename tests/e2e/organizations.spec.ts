@@ -1,6 +1,6 @@
 import { test, expect } from './fixtures'
 import { OrganizationsPage, OrganizationDetailPage } from './pages'
-import { MOCK_USER, mockOrgDetailApis, clearServerState } from './helpers'
+import { MOCK_USER, MOCK_RBAC_PERMISSIONS, mockOrgDetailApis, clearServerState } from './helpers'
 
 /**
  * E2E tests for organization management.
@@ -247,9 +247,9 @@ test.describe('Organizations - Detail Page', () => {
     await orgDetail.rbacTab.click()
 
     // RBAC section heading
-    await expect(page.getByText('RBAC Configuration')).toBeVisible()
+    await expect(page.getByText('Role-Based Access Control')).toBeVisible()
     await expect(
-      page.getByText('No RBAC permissions configured.'),
+      page.getByText('No custom RBAC permissions configured. Default permissions apply.'),
     ).toBeVisible()
   })
 
@@ -280,5 +280,72 @@ test.describe('Organizations - Detail Page', () => {
 
     await expect(orgDetail.notFoundMessage).toBeVisible()
     await expect(orgDetail.backButton).toBeVisible()
+  })
+})
+
+test.describe('Organizations - RBAC Tab (Populated Matrix)', () => {
+  let orgDetail: OrganizationDetailPage
+
+  test.beforeEach(async ({ page }) => {
+    orgDetail = new OrganizationDetailPage(page)
+    await clearServerState(page)
+
+    // Mock with full RBAC permissions
+    await page.route('**/api/organizations', async (route) => {
+      if (route.request().method() === 'GET') {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify(MOCK_ORGS),
+        })
+      } else {
+        await route.continue()
+      }
+    })
+    await mockOrgDetailApis(page, 'org-1', {
+      org: MOCK_ORGS[0],
+      members: MOCK_MEMBERS,
+      rbac: MOCK_RBAC_PERMISSIONS,
+      projects: MOCK_PROJECTS,
+    })
+  })
+
+  test('RBAC tab shows 5 role cards when permissions are populated', async ({ page }) => {
+    await orgDetail.goto('org-1')
+    await orgDetail.rbacTab.click()
+
+    // All 5 role badges should be visible
+    await expect(page.getByText('Organization Manager')).toBeVisible()
+    await expect(page.getByText('Project Manager')).toBeVisible()
+    await expect(page.getByText('Product Owner')).toBeVisible()
+    await expect(page.getByText('Qa Engineer')).toBeVisible()
+    await expect(page.getByText('Developer')).toBeVisible()
+  })
+
+  test('each role card has table with resource rows and action columns', async ({ page }) => {
+    await orgDetail.goto('org-1')
+    await orgDetail.rbacTab.click()
+
+    // Check for resource labels in tables
+    await expect(page.getByText('Test Cases').first()).toBeVisible()
+    await expect(page.getByText('Test Plans').first()).toBeVisible()
+    await expect(page.getByText('Test Suites').first()).toBeVisible()
+    await expect(page.getByText('Test Runs').first()).toBeVisible()
+    await expect(page.getByText('Reports').first()).toBeVisible()
+
+    // Check for action column headers
+    await expect(page.getByText('Read').first()).toBeVisible()
+    await expect(page.getByText('Edit').first()).toBeVisible()
+    await expect(page.getByText('Delete').first()).toBeVisible()
+  })
+
+  test('permission switches are rendered for each role-resource-action combination', async ({ page }) => {
+    await orgDetail.goto('org-1')
+    await orgDetail.rbacTab.click()
+
+    // There should be 75 total switches (5 roles × 5 resources × 3 actions)
+    // Each role card has 15 switches
+    const switches = page.locator('[role="switch"]')
+    await expect(switches).toHaveCount(75)
   })
 })

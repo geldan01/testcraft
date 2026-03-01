@@ -34,7 +34,7 @@ export default defineEventHandler(async (event) => {
     },
   })
 
-  if (!membership || !['ORGANIZATION_MANAGER', 'PROJECT_MANAGER'].includes(membership.role)) {
+  if (!user.isAdmin && (!membership || !['ORGANIZATION_MANAGER', 'PROJECT_MANAGER'].includes(membership.role))) {
     throw createError({ statusCode: 403, statusMessage: 'Insufficient permissions to update this project' })
   }
 

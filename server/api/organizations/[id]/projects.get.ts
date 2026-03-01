@@ -19,7 +19,7 @@ export default defineEventHandler(async (event) => {
     },
   })
 
-  if (!membership) {
+  if (!membership && !user.isAdmin) {
     throw createError({ statusCode: 403, statusMessage: 'You are not a member of this organization' })
   }
 
