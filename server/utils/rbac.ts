@@ -14,7 +14,11 @@ export async function checkRbacPermission(
   organizationId: string,
   objectType: ObjectType,
   action: RbacAction,
+  isAdmin = false,
 ): Promise<boolean> {
+  // Super-admins bypass all RBAC checks
+  if (isAdmin) return true
+
   // Look up the user's membership to get their role
   const membership = await prisma.organizationMember.findUnique({
     where: {
@@ -60,8 +64,9 @@ export async function requireRbacPermission(
   organizationId: string,
   objectType: ObjectType,
   action: RbacAction,
+  isAdmin = false,
 ): Promise<void> {
-  const allowed = await checkRbacPermission(userId, organizationId, objectType, action)
+  const allowed = await checkRbacPermission(userId, organizationId, objectType, action, isAdmin)
   if (!allowed) {
     throw createError({
       statusCode: 403,

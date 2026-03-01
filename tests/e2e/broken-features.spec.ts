@@ -202,16 +202,14 @@ test.describe('Broken Features - Project Detail', () => {
     await mockProjectApi(page, 'project-1', MOCK_PROJECT)
   })
 
-  test('"Project Settings" button has no handler', async ({ page }) => {
+  test('"Project Settings" button navigates to project settings page', async ({ page }) => {
     await project.goto('project-1')
 
     await expect(project.projectSettingsButton).toBeVisible()
 
-    // Clicking should not navigate anywhere
-    const urlBefore = page.url()
+    // Clicking should navigate to the project settings page
     await project.projectSettingsButton.click()
-    await page.waitForTimeout(500)
-    await expect(page).toHaveURL(urlBefore)
+    await expect(page).toHaveURL(/\/projects\/project-1\/settings/)
   })
 })
 

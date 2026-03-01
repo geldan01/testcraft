@@ -58,6 +58,17 @@ export async function requireAuth(event: H3Event) {
   return user
 }
 
+export async function requireAdmin(event: H3Event) {
+  const user = await requireAuth(event)
+  if (!user.isAdmin) {
+    throw createError({
+      statusCode: 403,
+      statusMessage: 'Super-admin access required',
+    })
+  }
+  return user
+}
+
 export function generateToken(userId: string, email: string): string {
   const config = useRuntimeConfig()
   return jwt.sign({ userId, email }, config.jwtSecret, { expiresIn: '7d' })

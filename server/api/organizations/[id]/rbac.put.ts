@@ -30,7 +30,7 @@ export default defineEventHandler(async (event) => {
     },
   })
 
-  if (!membership || membership.role !== 'ORGANIZATION_MANAGER') {
+  if (!user.isAdmin && (!membership || membership.role !== 'ORGANIZATION_MANAGER')) {
     throw createError({ statusCode: 403, statusMessage: 'Only organization managers can update RBAC permissions' })
   }
 

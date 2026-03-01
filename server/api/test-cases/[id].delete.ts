@@ -20,7 +20,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // Verify access and RBAC permission
-  await requireRbacPermission(user.id, testCase.project.organizationId, 'TEST_CASE', 'DELETE')
+  await requireRbacPermission(user.id, testCase.project.organizationId, 'TEST_CASE', 'DELETE', user.isAdmin)
 
   await prisma.testCase.delete({
     where: { id: caseId },

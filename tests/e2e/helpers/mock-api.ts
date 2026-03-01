@@ -23,6 +23,12 @@ export async function clearServerState(page: Page) {
         if (val && typeof val === 'object') {
           // Remove server-hydrated Pinia state
           if ('pinia' in val) delete val.pinia
+          // Clear useAsyncData cache so client re-fetches through mocked routes
+          if (val.data && typeof val.data === 'object') {
+            for (const key of Object.keys(val.data)) {
+              delete val.data[key]
+            }
+          }
           // Tell Nuxt this wasn't server-rendered so Vue renders fresh
           // instead of trying to hydrate the server-rendered DOM
           val.serverRendered = false
@@ -603,6 +609,158 @@ export async function mockDebugQueueApi(page: Page, projectId: string, testCases
           totalPages: 1,
         }),
       })
+    }
+  })
+}
+
+// =============================================================================
+// ADMIN API MOCKS
+// =============================================================================
+
+export async function mockAdminStatsApi(page: Page, stats: object) {
+  await page.route('**/api/admin/stats', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(stats),
+    })
+  })
+}
+
+export async function mockAdminUsersApi(page: Page, users: object[], opts?: { total?: number; page?: number; totalPages?: number }) {
+  await page.route('**/api/admin/users*', async (route) => {
+    // Don't intercept requests to specific user IDs (those have their own mock)
+    const url = route.request().url()
+    if (/\/api\/admin\/users\/[^?]/.test(url)) {
+      await route.continue()
+      return
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: users,
+        total: opts?.total ?? users.length,
+        page: opts?.page ?? 1,
+        limit: 20,
+        totalPages: opts?.totalPages ?? 1,
+      }),
+    })
+  })
+}
+
+export async function mockAdminUserDetailApi(page: Page, userId: string, user: object | null) {
+  await page.route(`**/api/admin/users/${userId}`, async (route) => {
+    if (!user) {
+      await route.fulfill({
+        status: 404,
+        contentType: 'application/json',
+        body: JSON.stringify({ statusCode: 404, message: 'User not found' }),
+      })
+      return
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(user),
+    })
+  })
+}
+
+export async function mockAdminUpdateUserApi(page: Page, userId: string, response: object) {
+  await page.route(`**/api/admin/users/${userId}`, async (route) => {
+    if (route.request().method() === 'PUT') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(response),
+      })
+    } else {
+      await route.continue()
+    }
+  })
+}
+
+export async function mockAdminDeleteUserApi(page: Page, userId: string) {
+  await page.route(`**/api/admin/users/${userId}`, async (route) => {
+    if (route.request().method() === 'DELETE') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true }),
+      })
+    } else {
+      await route.continue()
+    }
+  })
+}
+
+export async function mockAdminResetPasswordApi(page: Page, userId: string) {
+  await page.route(`**/api/admin/users/${userId}/reset-password`, async (route) => {
+    if (route.request().method() === 'POST') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true }),
+      })
+    } else {
+      await route.continue()
+    }
+  })
+}
+
+export async function mockAdminOrganizationsApi(page: Page, orgs: object[], opts?: { total?: number; page?: number; totalPages?: number }) {
+  await page.route('**/api/admin/organizations*', async (route) => {
+    // Don't intercept requests to specific org IDs
+    const url = route.request().url()
+    if (/\/api\/admin\/organizations\/[^?]/.test(url)) {
+      await route.continue()
+      return
+    }
+    if (route.request().method() === 'GET') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          data: orgs,
+          total: opts?.total ?? orgs.length,
+          page: opts?.page ?? 1,
+          limit: 20,
+          totalPages: opts?.totalPages ?? 1,
+        }),
+      })
+    } else if (route.request().method() === 'POST') {
+      await route.continue()
+    } else {
+      await route.continue()
+    }
+  })
+}
+
+export async function mockAdminCreateOrgApi(page: Page, response: object) {
+  await page.route('**/api/admin/organizations', async (route) => {
+    if (route.request().method() === 'POST') {
+      await route.fulfill({
+        status: 201,
+        contentType: 'application/json',
+        body: JSON.stringify(response),
+      })
+    } else {
+      await route.continue()
+    }
+  })
+}
+
+export async function mockAdminDeleteOrgApi(page: Page, orgId: string) {
+  await page.route(`**/api/admin/organizations/${orgId}`, async (route) => {
+    if (route.request().method() === 'DELETE') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true }),
+      })
+    } else {
+      await route.continue()
     }
   })
 }

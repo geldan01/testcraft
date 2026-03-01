@@ -8,7 +8,9 @@ import { mockSettingsApis } from './helpers'
  *
  * Covers the Organization tab (form fields, save, danger zone),
  * Members tab (list, invite modal, role dropdowns, remove),
- * and RBAC tab (permissions display, empty state).
+ * and Preferences tab.
+ *
+ * Note: RBAC management has been moved to the organization detail page.
  */
 
 const MOCK_MEMBERS = [
@@ -61,7 +63,7 @@ test.describe('Settings - Organization Tab', () => {
 
     await expect(settingsPage.heading).toBeVisible()
     await expect(
-      page.getByText('Manage organization settings, members, and access control.'),
+      page.getByText('Manage organization settings, members, and preferences.'),
     ).toBeVisible()
   })
 
@@ -165,34 +167,5 @@ test.describe('Settings - Members Tab', () => {
   })
 })
 
-test.describe('Settings - RBAC Tab', () => {
-  let settingsPage: SettingsPage
-
-  test.beforeEach(async ({ page }) => {
-    settingsPage = new SettingsPage(page)
-    await mockSettingsApis(page, 'demo-org-id', { members: MOCK_MEMBERS })
-  })
-
-  test('RBAC tab shows permissions heading and description', async () => {
-    await settingsPage.goto()
-
-    // Click RBAC tab
-    await settingsPage.rbacTab.click()
-
-    await expect(settingsPage.rbacHeading).toBeVisible()
-    await expect(
-      settingsPage.page.getByText('Configure which roles can perform actions on different object types.'),
-    ).toBeVisible()
-  })
-
-  test('RBAC empty state when no custom permissions configured', async () => {
-    await settingsPage.goto()
-
-    // Click RBAC tab
-    await settingsPage.rbacTab.click()
-
-    await expect(
-      settingsPage.page.getByText('No custom RBAC permissions configured. Default permissions apply.'),
-    ).toBeVisible()
-  })
-})
+// RBAC tab tests removed — RBAC management has been moved to the organization detail page.
+// See tests/e2e/organizations.spec.ts for RBAC-related tests.

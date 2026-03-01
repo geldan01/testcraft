@@ -9,6 +9,7 @@ export const useAuth = () => {
 
   const isAuthenticated = computed(() => authStore.isAuthenticated)
   const currentUser = computed(() => authStore.currentUser)
+  const isAdmin = computed(() => authStore.isAdmin)
   const userName = computed(() => authStore.userName)
   const userInitials = computed(() => authStore.userInitials)
 
@@ -45,6 +46,7 @@ export const useAuth = () => {
   return {
     isAuthenticated,
     currentUser,
+    isAdmin,
     userName,
     userInitials,
     login,
