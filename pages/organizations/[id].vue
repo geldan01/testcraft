@@ -120,6 +120,7 @@ const inviteRole = ref<OrganizationRole>('QA_ENGINEER')
 const inviting = ref(false)
 const inviteError = ref('')
 const inviteLink = ref('')
+const emailSent = ref(false)
 const linkCopied = ref(false)
 
 const roleOptions = [
@@ -154,6 +155,7 @@ async function handleInviteMember() {
     })
     if (result) {
       inviteLink.value = result.inviteUrl
+      emailSent.value = result.emailSent
     }
   } catch {
     inviteError.value = 'An error occurred. Please try again.'
@@ -167,6 +169,7 @@ function resetInviteModal() {
   inviteRole.value = 'QA_ENGINEER'
   inviteError.value = ''
   inviteLink.value = ''
+  emailSent.value = false
   linkCopied.value = false
 }
 
@@ -563,9 +566,14 @@ async function handlePermissionToggle(permissionId: string, currentAllowed: bool
           <div v-else class="space-y-4">
             <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3 flex items-start gap-2">
               <UIcon name="i-lucide-check-circle" class="text-green-500 text-lg shrink-0 mt-0.5" />
-              <p class="text-sm text-green-700 dark:text-green-300 font-medium">
-                Invitation created successfully!
-              </p>
+              <div>
+                <p class="text-sm text-green-700 dark:text-green-300 font-medium">
+                  Invitation created successfully!
+                </p>
+                <p v-if="emailSent" class="text-sm text-green-600 dark:text-green-400 mt-1">
+                  An email invitation has been sent to <strong>{{ inviteEmail }}</strong>.
+                </p>
+              </div>
             </div>
 
             <UFormField label="Invite link">
@@ -582,17 +590,19 @@ async function handlePermissionToggle(permissionId: string, currentAllowed: bool
             </UFormField>
 
             <p class="text-sm text-gray-500 dark:text-gray-400">
-              Share this link with <strong>{{ inviteEmail }}</strong>. It expires in 7 days.
+              {{ emailSent ? 'You can also share this link directly.' : `Share this link with` }}
+              <strong v-if="!emailSent">{{ inviteEmail }}</strong>{{ emailSent ? '' : '.' }}
+              It expires in 7 days.
             </p>
 
-            <UFormField label="Or copy this message">
+            <UFormField v-if="!emailSent" label="Or copy this message">
               <UTextarea :model-value="emailContent" readonly :rows="4" class="w-full" data-testid="invite-email-content" />
             </UFormField>
           </div>
 
           <template #footer>
             <div class="flex justify-end gap-2">
-              <UButton v-if="inviteLink" variant="outline" color="neutral" :href="mailtoLink" tag="a" icon="i-lucide-mail" data-testid="invite-mailto-button">
+              <UButton v-if="inviteLink && !emailSent" variant="outline" color="neutral" :href="mailtoLink" tag="a" icon="i-lucide-mail" data-testid="invite-mailto-button">
                 Send via Email
               </UButton>
               <UButton
