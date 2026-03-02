@@ -6,9 +6,9 @@ import type { Transporter } from 'nodemailer'
 
 let _transporter: Transporter | null = null
 
-function getTransporter(): Transporter {
+async function getTransporter(): Promise<Transporter> {
   if (!_transporter) {
-    const nodemailer = require('nodemailer') as typeof import('nodemailer')
+    const nodemailer = await import('nodemailer')
     const config = useRuntimeConfig()
 
     _transporter = nodemailer.createTransport({
@@ -35,17 +35,17 @@ export async function sendInvitationEmail(
   inviterName: string,
   role: string,
   inviteUrl: string,
-): Promise<void> {
+): Promise<boolean> {
   const config = useRuntimeConfig()
 
   if (!config.emailEnabled) {
     console.log(`[email] Email disabled — skipping invitation email to ${to}`)
-    return
+    return false
   }
 
   if (!config.smtpHost) {
     console.warn('[email] EMAIL_ENABLED is true but SMTP_HOST is not set — skipping')
-    return
+    return false
   }
 
   const formattedRole = role
@@ -114,7 +114,7 @@ export async function sendInvitationEmail(
 </html>`
 
   try {
-    const transporter = getTransporter()
+    const transporter = await getTransporter()
     await transporter.sendMail({
       from: config.emailFrom as string,
       to,
@@ -122,7 +122,9 @@ export async function sendInvitationEmail(
       html,
     })
     console.log(`[email] Invitation email sent to ${to}`)
+    return true
   } catch (err) {
     console.error(`[email] Failed to send invitation email to ${to}:`, err)
+    return false
   }
 }

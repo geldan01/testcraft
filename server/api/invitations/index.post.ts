@@ -93,9 +93,9 @@ export default defineEventHandler(async (event) => {
   const origin = getRequestURL(event).origin
   const inviteUrl = `${origin}/invite/${invitation.token}`
 
-  // Fire-and-forget: email failure doesn't break the invitation flow
-  sendInvitationEmail(email, invitation.organization.name, user.name, role, inviteUrl)
+  // Attempt to send email via SMTP — failure doesn't break the invitation flow
+  const emailSent = await sendInvitationEmail(email, invitation.organization.name, user.name, role, inviteUrl)
 
   setResponseStatus(event, 201)
-  return { invitation, inviteUrl }
+  return { invitation, inviteUrl, emailSent }
 })

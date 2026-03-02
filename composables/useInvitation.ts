@@ -6,9 +6,9 @@ export const useInvitation = () => {
   async function createInvitation(
     organizationId: string,
     data: CreateInvitationInput,
-  ): Promise<{ invitation: Invitation; inviteUrl: string } | null> {
+  ): Promise<{ invitation: Invitation; inviteUrl: string; emailSent: boolean } | null> {
     try {
-      return await $fetch<{ invitation: Invitation; inviteUrl: string }>('/api/invitations', {
+      return await $fetch<{ invitation: Invitation; inviteUrl: string; emailSent: boolean }>('/api/invitations', {
         method: 'POST',
         body: { organizationId, ...data },
       })
